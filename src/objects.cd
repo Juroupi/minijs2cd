@@ -1,0 +1,98 @@
+type Value = Object | `null | `undefined | Int | Float | String | Bool
+
+type Object = {
+	properties = (ref {..});
+	prototype = (ref (Object | `null));
+	..
+}
+
+type FunctionObject = Object + { call = (Value -> [Value*] -> Value) }
+
+type PropertyOperators = {
+	get = (Object -> (Value | `nil));
+	set = (Object -> Value -> []);
+	delete = (Object -> []);
+}
+
+let call (obj : Value) (this : Value) (params : [Value*]) : Value =
+	match obj with
+	| fobj & FunctionObject -> fobj.call this params
+	| _ -> raise "TypeError"
+
+let get_property (obj : Value) (ops : PropertyOperators) : Value =
+	match obj with
+	| obj & Object -> (
+		match ops.get obj with
+		| `nil -> (
+			match !(obj.prototype) with
+			| `null -> `undefined
+			| prototype & Object -> get_property prototype ops
+		)
+		| value & Value -> value
+	)
+	| _ -> raise "get_property"
+
+let set_property (obj : Value) (ops : PropertyOperators) (value : Value) : Value =
+	match obj with
+	| obj & Object ->	ops.set obj value; `true
+	| _ -> raise "set_property"
+
+let delete_property (obj : Value) (ops : PropertyOperators) : Value =
+	match obj with
+	| obj & Object ->	ops.delete obj; `true
+	| _ -> raise "set_property"
+
+let get_prototype_of (obj : Value) : Value =
+	match obj with
+	| obj & Object -> !(obj.prototype)
+	| _ -> raise "get_prototype_of"
+
+let set_prototype_of (obj : Value) (value : Value) : Value =
+	match (obj, value) with
+	| (obj & Object, value & (Object | `null)) -> obj.prototype := value
+	| _ -> raise "set_prototype_of"
+
+let string_of_number (n : Float) : String =
+	match string_of n with
+	| [ s::((Char \ '.')*) '.' '0'* ] -> s
+	| [ s::((Char \ '.')* '.' (Char \ '0')*) '0'* ] -> s
+	| s -> s
+
+let print_value (value : Value) : [] =
+	match value with
+	| FunctionObject -> print "\x1B;[36m[Function]\x1B;[0m"
+	| Object -> print "{}"
+	| `null -> print "\x1B;[1mnull\x1B;[0m"
+	| `undefined -> print "\x1B;[90mundefined\x1B;[0m"
+	| x & Int -> print ("\x1B;[33m" @ (string_of x) @ "n\x1B;[0m")
+	| x & Float -> print_utf8 ("\x1B;[33m" @ string_of_number x @ "\x1B;[0m")
+	| x & String -> print_utf8 x
+	| `false -> print "\x1B;[33mfalse\x1B;[0m"
+	| `true -> print "\x1B;[33mtrue\x1B;[0m"
+
+let print_sequence (values : [Value*]) : `undefined =
+	let _ = (map values with value -> (print_value value; print " ")) in
+	print "\n";
+	`undefined
+
+let object_prototype = {
+	properties = (ref {..} {});
+	prototype = (ref (Object | `null) `null);
+}
+
+let function_prototype = {
+	properties = (ref {..} {});
+	prototype = (ref (Object | `null) object_prototype);
+}
+
+let global_this = {
+	properties = (ref {..} {});
+	prototype = (ref (Object | `null) object_prototype);
+}
+
+let this = {
+	properties = (ref {..} {});
+	prototype = (ref (Object | `null) object_prototype);
+}
+
+let globalThis = ref (Object) global_this
