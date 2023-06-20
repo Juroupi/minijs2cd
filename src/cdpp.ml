@@ -44,6 +44,15 @@ let print out prog =
       print_block body;
       Printf.fprintf out ") in\n";
       print_statements statements
+    | CondStatement (cond, s1, s2) :: statements ->
+      Printf.fprintf out "let _ = (if to_boolean (";
+      print_expression cond;
+      Printf.fprintf out ") then (";
+      print_statements [ s2 ];
+      Printf.fprintf out ") else (";
+      print_statements [ s1 ];
+      Printf.fprintf out ")) in\n";
+      print_statements statements
   
   and print_sequence l =
     Printf.fprintf out "[ ";
@@ -62,7 +71,7 @@ let print out prog =
     | NumberExpression n ->
       Printf.fprintf out "(float_of \"%s\")" n
     | BigIntExpression n ->
-      Printf.fprintf out "%sn" n
+      Printf.fprintf out "%s" n
     | StringExpression s ->
       Printf.fprintf out "\"%s\"" s
     | BooleanExpression true ->
@@ -167,14 +176,14 @@ let print out prog =
     let rec print_params_pattern nparams dparams =
       match nparams with
       | nparam :: nparams' ->
-        Printf.fprintf out "| [";
+        Printf.fprintf out " | [";
         list_rev_iter (Printf.fprintf out " %s") nparams;
         Printf.fprintf out " _* ] -> f";
         list_rev_iter (Printf.fprintf out " (ref (Value) %s)") nparams;
         List.iter (fun _ -> Printf.fprintf out " (ref (Value) `undefined)") dparams;
         print_params_pattern nparams' (nparam :: dparams)
       | _ ->
-        Printf.fprintf out "| [] -> f";
+        Printf.fprintf out " | [] -> f";
         List.iter (fun _ -> Printf.fprintf out " (ref (Value) `undefined)") dparams
     in print_params_pattern (List.rev params) []
 

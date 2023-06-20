@@ -12,7 +12,7 @@
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{true}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral true</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{false}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral false</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{:}\texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{x}_n\texttt{:}\texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'objet</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}{\color{gray}\cdots}\texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1{\color{gray}\cdots}\texttt{s}_m\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}{\color{gray}\cdots}\texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x = e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e.x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Accès à une propriété</span>
@@ -22,7 +22,9 @@
 <span style="display:inline-block;width:26em;">$\texttt{s} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Instructions**</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Expression</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{let x = e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déclaration de variable</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{return e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Retour de fonction</span><span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Bloc d'instructions</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{if (e) s}_1\texttt{ else s}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Instruction conditionnelle</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{return e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Retour de fonction</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Bloc d'instructions</span>
 
 <span style="display:inline-block;width:26em;">$\texttt{t} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Types**</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{boolean}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Booléen</span>
@@ -45,7 +47,7 @@
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{\\ x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'un champ</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{fun}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{ref}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \textbf{\texttt{ref}}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{:= }\texttt{e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{!}\texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déréférencement</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{match e}_p\texttt{ with p}_1\ \texttt{->}\ \texttt{e}_1\ \texttt{|}\ {\color{gray}\cdots}\  \texttt{|}\ \texttt{p}_n\ \texttt{->}\ \texttt{e}_n$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Pattern matching</span>
@@ -162,7 +164,7 @@ Si la propriété existe dans l'objet, on modifie sa valeur. Sinon, on la crée.
 
 ​	$[\![{\color{teal}\texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}}]\!]_{\texttt e} = \ \texttt{{\color{rgb(145,80,110)}call} }[\![{\color{teal}\texttt{e}_f}]\!]_{\texttt e}\texttt{ {\color{rgb(145,80,110)}global\_this} [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
 
-La fonction $\texttt{{\color{rgb(145,80,110)}call}}$ appelle la fonction $\texttt{call}$ de l'objet fonction avec le $\texttt{this}$ et la séquence de paramètres. Si ce n'est pas un objet fonction, une exception $\texttt{TypeError}$ est levée. On associe l'objet $\texttt{{\color{rgb(145,80,110)}global\_this}}$ ([19](https://262.ecma-international.org/13.0/#sec-global-object)) au $\texttt{this}$ de la fonction.
+La fonction $\texttt{{\color{rgb(145,80,110)}call}}$ appelle la fonction $\texttt{call}$ de l'objet fonction avec le $\texttt{this}$ et la séquence de paramètres. Si ce n'est pas un objet fonction et qu'on ne peut donc pas l'appeler, une exception $\texttt{TypeError}$ est levée. On associe l'objet $\texttt{{\color{rgb(145,80,110)}global\_this}}$ ([19](https://262.ecma-international.org/13.0/#sec-global-object)) au $\texttt{this}$ de la fonction. Cet objet est l'objet global de l'environnement d'exécution.
 
 ​	$[\![{\color{teal}\texttt{e.x}\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}}]\!]_{\texttt e} =\ \texttt{let o = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in {\color{rgb(145,80,110)}call} (}\texttt{{\color{rgb(145,80,110)}get\_property} o }[\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\texttt{) o [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
 
@@ -184,9 +186,10 @@ $\texttt{{\color{rgb(145,80,110)}object\_prototype}}$ ([20.1.3](https://262.ecma
 ​	$\quad\quad\texttt{in}$
 ​	$\quad\quad\texttt{match params with}$
 ​	$\quad\quad\texttt{| [] -> f (ref Value }\unicode{96}\texttt{undefined}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
-​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\texttt{ ] -> f (ref Value {\color{teal}x}}{\color{teal}_1})\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\texttt{ ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\texttt{\color{teal} x}{\color{teal}_2} \texttt{ ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)} \texttt{ (ref Value {\color{teal}x}}{\color{teal}_2}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
 ​	$\quad\quad\texttt{| }{\color{gray}\cdots}$
-​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\ {\color{gray}\cdots}\ \ \texttt{{\color{teal}x}}{\color{teal}_n}\texttt{ \_* ] -> f (ref Value {\color{teal}x}}{\color{teal}_1})\ {\color{gray}\cdots}\ \texttt{(ref Value {\color{teal}x}}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\ {\color{gray}\cdots}\ \ \texttt{{\color{teal}x}}{\color{teal}_n}\texttt{ \_* ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value {\color{teal}x}}{\color{teal}_n}\texttt{)}$
 ​	$\texttt{\}}$
 
 Une fonction est un objet mais son prototype par défaut est $\texttt{{\color{rgb(145,80,110)}function\_prototype}}$ ([20.2.3](https://262.ecma-international.org/13.0/#sec-properties-of-the-function-prototype-object)).
@@ -232,6 +235,15 @@ On utilise le "$\texttt{\_}$" pour ignorer la valeur de l'expression.
 <span style="display:inline-block;width:24em;">		$\texttt{let \_ = {\color{teal}x} := } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$</span>$\rightarrow\ $ Initialisation
 
 En JavaScript, les déclarations de variables avec $\texttt{let}$ sont remontées au début de leur bloc. Si on essaye de récupérer la valeur d'une variable avant son initialisation, une exception $\texttt{ReferenceError}$ est levée. Deux déclarations ne peuvent pas avoir le même nom dans une même bloc.
+
+​	$[\![{\color{teal}\texttt{if (e) s}_1\texttt{ else s}_2}\ {\color{gray}\cdots}]\!]_{\texttt s} =$
+​	$\quad\texttt{let \_ = }$
+​	$\quad\quad\texttt{match } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ with}$
+​	$\quad\quad\texttt{| \_ \& (}\unicode{96}\texttt{false | }\unicode{96}\texttt{undefined | }\unicode{96}\texttt{null | "" | 0) -> } [\![{\color{teal}\texttt{s}_2}]\!]_{\texttt s}$
+​	$\quad\quad\texttt{| \_ -> } [\![{\color{teal}\texttt{s}_1}]\!]_{\texttt s}$
+​	$\quad\texttt{in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
+
+En JavaScript, les valeurs $\unicode{96}\texttt{false}$, $\unicode{96}\texttt{undefined}$, $\unicode{96}\texttt{null}$, $\texttt{""}$ (chaîne de caractères vide) et $\texttt{0}$ (entier) sont considérées comme fausses. Les valeurs $\texttt{NaN}$ et $\texttt{0}$ (flottant) doivent aussi être considérées comme fausses mais ne sont pas prises en compte ici. Les autres valeurs sont considérées comme vraies ([7.1.2](https://262.ecma-international.org/13.0/#sec-toboolean)).
 
 ​	$[\![{\color{teal}\texttt{return e;}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} = \texttt{raise (}\unicode{96}\texttt{return, }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{)}$
 

@@ -13,6 +13,7 @@ and statement =
   | DeclarationStatement of string * expression
   | ReturnStatement of expression
   | BlockStatement of block
+  | CondStatement of expression * statement * statement
 
 and expression =
   | IdentifierExpression of string

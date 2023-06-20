@@ -58,6 +58,9 @@ let string_of_number (n : Float) : String =
 	| [ s::((Char \ '.')* '.' (Char \ '0')*) '0'* ] -> s
 	| s -> s
 
+let to_boolean (value : Value) : Bool =
+	(value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = "")
+
 let print_value (value : Value) : [] =
 	match value with
 	| FunctionObject -> print "\x1B;[36m[Function]\x1B;[0m"
