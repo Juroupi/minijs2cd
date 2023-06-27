@@ -11,14 +11,15 @@
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL
 %token TRUE FALSE NULL UNDEFINED FUNCTION LET DELETE RETURN THIS
-%token IF ELSE WHILE
+%token IF ELSE WHILE TYPEOF IN
 %token <string> STRING
 %token <string> NUMBER
 %token <string> BIGINT
 %token <string> IDENT
 
 %right EQUAL
-%nonassoc DELETE
+%left IN
+%nonassoc DELETE TYPEOF
 %nonassoc LPAR
 %left DOT
 
@@ -62,6 +63,8 @@ non_statement_expression:
 | FALSE { BooleanExpression false }
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
+| TYPEOF e=expression { TypeofExpression e }
+| name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
 | name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
 | obj=non_statement_expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
 | obj=non_statement_expression DOT name=IDENT EQUAL value=expression { add_property name; MemberAssignmentExpression (obj, name, value) }
@@ -81,6 +84,8 @@ expression:
 | FALSE { BooleanExpression false }
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
+| TYPEOF e=expression { TypeofExpression e }
+| name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
 | name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
 | obj=expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
 | obj=expression DOT name=IDENT EQUAL value=expression { add_property name; MemberAssignmentExpression (obj, name, value) }

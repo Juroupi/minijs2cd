@@ -41,6 +41,16 @@ let call (obj : Value) (this : Value) (params : [Value*]) : Value =
 	| fobj & FunctionObject -> fobj.call this params
 	| _ -> raise "TypeError"
 
+let contains_property (obj : Value) (ops : PropertyOperators) : Value =
+	let obj = to_object obj in
+	match ops.get obj with
+	| `nil -> (
+		match !(obj.prototype) with
+		| `null -> `false
+		| prototype & Object -> contains_property prototype ops
+	)
+	| Value -> `true
+
 let get_property (obj : Value) (ops : PropertyOperators) : Value =
 	let obj = to_object obj in
 	match ops.get obj with
@@ -92,6 +102,17 @@ let to_object (value : Value) : Object =
 
 let to_boolean (value : Value) : Bool =
 	not ((value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = ""))
+
+let type_of (value : Value) : String =
+	match value with
+	| `undefined -> "undefined"
+	| `null -> "object"
+	| Int -> "bigint"
+	| Float -> "number"
+	| String -> "string"
+	| Bool -> "boolean"
+	| FunctionObject -> "function"
+	| Object -> "object"
 
 let print_value (value : Value) : [] =
 	match value with

@@ -92,6 +92,15 @@ let print out prog =
       Printf.fprintf out "`null"
     | UndefinedExpression ->
       Printf.fprintf out "`undefined"
+    | TypeofExpression e ->
+      Printf.fprintf out "(type_of ";
+      print_expression e;
+      Printf.fprintf out ")"
+    | InExpression (member, obj) ->
+      Printf.fprintf out "(contains_property (";
+      print_expression obj;
+      Printf.fprintf out ") __%s_prop__" member;
+      Printf.fprintf out ")"
     | AssignmentExpression (name, value) ->
       Printf.fprintf out "(let tmp = ";
       print_expression value;

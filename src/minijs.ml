@@ -25,6 +25,8 @@ and expression =
   | BooleanExpression of bool
   | NullExpression
   | UndefinedExpression
+  | TypeofExpression of expression
+  | InExpression of string * expression
   | AssignmentExpression of string * expression
   | MemberAccessExpression of expression * string
   | MemberAssignmentExpression of expression * string * expression
