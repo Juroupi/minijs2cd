@@ -26,9 +26,10 @@ let ident = (alpha | '_') (alpha | '_' | digit)*
 let number = ("0" | (nzdigit digit* ))
 
 rule token = parse
-  | ['\n'] { new_line lexbuf; token lexbuf }
+  | '\n' { new_line lexbuf; token lexbuf }
   | [' ' '\t' '\r']+ { token lexbuf }
-  | "/*" _* "*/" { token lexbuf }
+  | "/*" { multiline_comment lexbuf }
+  | "//" { line_comment lexbuf }
   | "\"" (([^'"']*) as s) "\"" { STRING s }
   | "'" (([^'\'']*) as s) "'" { STRING s }
   | ident as i { ident_token i }
@@ -43,5 +44,15 @@ rule token = parse
   | "," { COMMA }
   | "." { DOT }
   | "=" { EQUAL }
+  (* | "==" { EQUALITY } *)
   | eof { EOF }
   | _ { raise (UnknownCharacter (lexeme lexbuf)) }
+
+and multiline_comment = parse
+  | "*/" { token lexbuf }
+  | '\n' { new_line lexbuf; multiline_comment lexbuf }
+  | _ { multiline_comment lexbuf }
+
+and line_comment = parse
+  | '\n' { new_line lexbuf; token lexbuf }
+  | _ { line_comment lexbuf }

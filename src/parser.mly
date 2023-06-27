@@ -11,13 +11,14 @@
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL
 %token TRUE FALSE NULL UNDEFINED FUNCTION LET DELETE RETURN THIS
-%token IF ELSE WHILE TYPEOF IN
+%token IF ELSE WHILE TYPEOF IN (* EQUALITY *)
 %token <string> STRING
 %token <string> NUMBER
 %token <string> BIGINT
 %token <string> IDENT
 
 %right EQUAL
+(* %left EQUALITY *)
 %left IN
 %nonassoc DELETE TYPEOF
 %nonassoc LPAR

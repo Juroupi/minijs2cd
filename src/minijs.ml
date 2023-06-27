@@ -23,6 +23,7 @@ and expression =
   | BigIntExpression of string
   | StringExpression of string
   | BooleanExpression of bool
+  (* | EqualityExpression of expression * expression *)
   | NullExpression
   | UndefinedExpression
   | TypeofExpression of expression

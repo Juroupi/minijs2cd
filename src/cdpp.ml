@@ -48,9 +48,9 @@ let print out prog =
       Printf.fprintf out "let _ = (if to_boolean (";
       print_expression cond;
       Printf.fprintf out ") then (\n";
-      print_statements [ s2 ];
-      Printf.fprintf out ") else (\n";
       print_statements [ s1 ];
+      Printf.fprintf out ") else (\n";
+      print_statements [ s2 ];
       Printf.fprintf out ")) in\n";
       print_statements statements
     | WhileStatement (cond, s) :: statements ->
