@@ -11,7 +11,7 @@
     List.iter (fun (n, k) -> Hashtbl.add keywords n k) [
       "true", TRUE; "false", FALSE; "null", NULL; "undefined", UNDEFINED;
       "function", FUNCTION; "let", LET; "delete", DELETE; "return", RETURN;
-      "this", THIS; "if", IF; "else", ELSE;
+      "this", THIS; "if", IF; "else", ELSE; "while", WHILE;
     ];
     fun n ->
       try Hashtbl.find keywords n

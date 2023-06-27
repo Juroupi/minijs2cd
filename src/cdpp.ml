@@ -44,14 +44,21 @@ let print out prog =
       print_block body;
       Printf.fprintf out ") in\n";
       print_statements statements
-    | CondStatement (cond, s1, s2) :: statements ->
+    | IfStatement (cond, s1, s2) :: statements ->
       Printf.fprintf out "let _ = (if to_boolean (";
       print_expression cond;
-      Printf.fprintf out ") then (";
+      Printf.fprintf out ") then (\n";
       print_statements [ s2 ];
-      Printf.fprintf out ") else (";
+      Printf.fprintf out ") else (\n";
       print_statements [ s1 ];
       Printf.fprintf out ")) in\n";
+      print_statements statements
+    | WhileStatement (cond, s) :: statements ->
+      Printf.fprintf out "let _ = (fun loop (_ : []) : [] = (if to_boolean (";
+      print_expression cond;
+      Printf.fprintf out ") then (let _ = \n";
+      print_statements [ s ];
+      Printf.fprintf out "in loop []) else [])) [] in\n";
       print_statements statements
   
   and print_sequence l =
@@ -85,9 +92,7 @@ let print out prog =
     | AssignmentExpression (name, value) ->
       Printf.fprintf out "(let tmp = ";
       print_expression value;
-      Printf.fprintf out " in ";
-      print_expression value;
-      Printf.fprintf out " := tmp in tmp)"
+      Printf.fprintf out " in %s := tmp; tmp)" name
     | MemberAccessExpression (obj, "__proto__") ->
       Printf.fprintf out "(get_prototype_of (";
       print_expression obj;

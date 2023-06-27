@@ -1,5 +1,12 @@
 # Traduction JavaScript vers CDuce
 
+## Introduction
+
+Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce](http://www.cduce.org). On se limite à une syntaxe très basique pour JavaScript qui prend en compte les objets et l'accès à leurs propriétés.
+CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML. Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$. Le typage de CDuce est dynamique, c'est à dire que les types sont déterminés à l'exécution, mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution.
+Le typage de JavaScript est aussi dynamique, ce qui fait que la traduction vers CDuce est plus facile que vers un langage avec un typage statique.
+
+
 ## Grammaires
 
 ### JavaScript
@@ -23,6 +30,7 @@
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Expression</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{let x = e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déclaration de variable</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{if (e) s}_1\texttt{ else s}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Instruction conditionnelle</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{while (e) s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Boucle</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{return e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Retour de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Bloc d'instructions</span>
 
@@ -45,7 +53,7 @@
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{=}\ \texttt{e}_1\ {\color{gray}\cdots}\ \texttt{x}_n\texttt{=}\ \texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'enregistrement</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{+ e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Concaténation d'enregistrements (priorité à $\texttt{e}_2$)</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{\\ x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'un champ</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{fun}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{fun x}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \textbf{\texttt{ref}}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{:= }\texttt{e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
@@ -82,31 +90,30 @@ Les types CDuces peuvent être récursifs, par exemple un type de liste d'entier
 
 #### Types de base
 
-<span style="display:inline-block;width:7.5em;">	$[\![{\color{teal}\texttt{boolean}}]\!]_{\texttt t}$</span>$=\ \texttt{Bool}$
-<span style="display:inline-block;width:7.5em;">	$[\![{\color{teal}\texttt{bigint}}]\!]_{\texttt t}$</span>$=\ \texttt{Int}$
-<span style="display:inline-block;width:7.5em;">	$[\![{\color{teal}\texttt{number}}]\!]_{\texttt t}$</span>$=\ \texttt{Float}$
-<span style="display:inline-block;width:7.5em;">	$[\![{\color{teal}\texttt{string}}]\!]_{\texttt t}$</span>$=\ \texttt{String}$
+<span style="display:inline-block;width:7.5em;">	$[\![{\texttt{boolean}}]\!]_{\texttt t}$</span>$=\ \texttt{Bool}$
+<span style="display:inline-block;width:7.5em;">	$[\![{\texttt{bigint}}]\!]_{\texttt t}$</span>$=\ \texttt{Int}$
+<span style="display:inline-block;width:7.5em;">	$[\![{\texttt{number}}]\!]_{\texttt t}$</span>$=\ \texttt{Float}$
+<span style="display:inline-block;width:7.5em;">	$[\![{\texttt{string}}]\!]_{\texttt t}$</span>$=\ \texttt{String}$
 
 Les types de base correspondent exactement aux types de base de CDuce.
 
-<span style="display:inline-block;width:8.8em;">	$[\![{\color{teal}\texttt{null}}]\!]_{\texttt t}$</span>$=\ \unicode{96}\texttt{null}$
-<span style="display:inline-block;width:8.8em;">	$[\![{\color{teal}\texttt{undefined}}]\!]_{\texttt t}$</span>$=\ \unicode{96}\texttt{undefined}$
+<span style="display:inline-block;width:8.8em;">	$[\![{\texttt{null}}]\!]_{\texttt t}$</span>$=\ \unicode{96}\texttt{null}$
+<span style="display:inline-block;width:8.8em;">	$[\![{\texttt{undefined}}]\!]_{\texttt t}$</span>$=\ \unicode{96}\texttt{undefined}$
 
 On représente les types $\texttt{null}$ et $\texttt{undefined}$ par les atomes du même nom.
 
 #### Types objet
 
-​	$[\![{\color{teal}\texttt{object}}]\!]_{\texttt t} = \texttt{Object} = \texttt{\{}$
+​	$[\![{\texttt{object}}]\!]_{\texttt t} = \texttt{Object} = \texttt{\{}$
 ​	$\quad\texttt{properties = ref \{..\}}$
 ​	$\quad\texttt{prototype = ref (Object | }\unicode{96}\texttt{null)}$
 ​	$\quad\texttt{..}$
 ​	$\ \texttt{\}}$
 
 Le champ $\texttt{properties}$ est un enregistrement qui permet de stocker les propriétés de l'objet. Les propriétés peuvent avoir des noms calculés dynamiquement en JavaScript mais pas en CDuce : on ne peut accéder à un champ d'un enregistrement qu'avec le pattern matching et son nom, qui doit être connu à la compilation. On va donc se limiter aux noms de propriétés connus à la compilation.
-
 Le champ $\texttt{prototype}$ permet de gérer l'héritage.
 
-​	$[\![{\color{teal}\texttt{function}}]\!]_{\texttt t} = \texttt{FunctionObject} = \texttt{\{}$
+​	$[\![{\texttt{function}}]\!]_{\texttt t} = \texttt{FunctionObject} = \texttt{\{}$
 ​	$\quad\texttt{properties = ref \{..\}}$
 ​	$\quad\texttt{prototype = ref (Object | }\unicode{96}\texttt{null)}$
 ​	$\quad\texttt{call = Value -> [Value*] -> Value}$
@@ -125,14 +132,14 @@ Une valeur JavaScript aura le type suivant en CDuce, qu'on va appeler $\texttt{V
 
 Comme les variables traduites par des références, il faut utiliser les opérateurs sur les références pour récupérer ou modifier leur valeur.
 
-​	$[\![{\color{teal}\texttt{x}\ \texttt{=}\ \texttt{e}}]\!]_{\texttt e} =$
+​	$[\![{\color{teal}\texttt{x}\ }\texttt{=}{\color{teal}\ \texttt{e}}]\!]_{\texttt e} =$
 ​		$\texttt{let tmp = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in}$
 ​		$\texttt{let \_ = }{\color{teal}\texttt{x}}\ \texttt{:= tmp in}$
 ​		$\texttt{tmp}$
 
 Une expression d'affectation a la valeur de l'expression de droite, la modification de la référence ne suffit pas.
 
-​	$[\![{\color{teal}\texttt{this}}]\!]_{\texttt e} = \texttt{this}$
+​	$[\![{\texttt{this}}]\!]_{\texttt e} = \texttt{this}$
 
 $\texttt{this}$ n'est pas une référence, il ne peut pas être modifié.
 
@@ -145,39 +152,39 @@ Les littéraux de grands entiers et de chaines de caractères sont laissés tels
 
 Il n'y a pas de littéraux pour les nombres flottants en CDuce, on doit utiliser la fonction $\texttt{float\_of}$ pour les créer.
 
-​	$[\![{\color{teal}\texttt{true}}]\!]_{\texttt e} = \unicode{96}\texttt{\texttt{true}}$
-​	$[\![{\color{teal}\texttt{false}}]\!]_{\texttt e} = \unicode{96}\texttt{false}$
+​	$[\![{\texttt{true}}]\!]_{\texttt e} = \unicode{96}\texttt{\texttt{true}}$
+​	$[\![{\texttt{false}}]\!]_{\texttt e} = \unicode{96}\texttt{false}$
 
 Les constantes booléennes sont traduites par les atomes correspondants.
 
-​	$[\![{\color{teal}\texttt{e.x}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}get\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
+​	$[\![{\color{teal}\texttt{e}}\texttt{.}{\color{teal}\texttt{x}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}get\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
 
 Pour accéder à une propriété en JavaScript, il faut d'abord chercher la propriété dans les propriétés de l'objet. Si la propriété n'est pas trouvée, il faut chercher dans les propriétés du prototype de l'objet et ainsi de suite jusqu'à la trouver ou arriver à un objet dont le prototype est $\texttt{null}$. Si la propriété est trouvée, on retourne la valeur qui lui est associée, sinon on retourne $\texttt{undefined}$. La fonction $\texttt{{\color{rgb(145,80,110)}get\_property}}$ implémente ce comportement ([10.1.8](https://262.ecma-international.org/13.0/#sec-ordinary-object-internal-methods-and-internal-slots-get-p-receiver)).
 
-​	$[\![{\color{teal}\texttt{delete e.x}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}delete\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
+​	$[\![{\texttt{delete {\color{teal}e}.{\color{teal}x}}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}delete\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
 
 La fonction $\texttt{{\color{rgb(145,80,110)}delete\_property}}$ ([10.1.10](https://262.ecma-international.org/13.0/#sec-ordinary-object-internal-methods-and-internal-slots-delete-p)) supprime la propriété si elle existe dans l'objet et ne fait rien sinon.
 
-​	$[\![{\color{teal}\texttt{e}_1\texttt{.x}\ \texttt{=}\ \texttt{e}_2}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}set\_property} }[\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ \ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\ \ [\![{\color{teal}\texttt{e}_2}]\!]_{\texttt e}$
+​	$[\![{{\color{teal}\texttt{e}_1}\texttt{.\color{teal}x}\ \texttt{=}\ {\color{teal}\texttt{e}_2}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}set\_property} }[\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ \ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\ \ [\![{\color{teal}\texttt{e}_2}]\!]_{\texttt e}$
 
 Si la propriété existe dans l'objet, on modifie sa valeur. Sinon, on la crée. C'est la fonction $\texttt{{\color{rgb(145,80,110)}set\_property}}$ qui implémente ce comportement ([10.1.9](https://262.ecma-international.org/13.0/#sec-ordinary-object-internal-methods-and-internal-slots-set-p-v-receiver)).
 
-​	$[\![{\color{teal}\texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}}]\!]_{\texttt e} = \ \texttt{{\color{rgb(145,80,110)}call} }[\![{\color{teal}\texttt{e}_f}]\!]_{\texttt e}\texttt{ {\color{rgb(145,80,110)}global\_this} [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
+​	$[\![{{\color{teal}\texttt{e}_f}\texttt{(}\ {\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{e}_n}\ \texttt{)}}]\!]_{\texttt e} = \ \texttt{{\color{rgb(145,80,110)}call} }[\![{\color{teal}\texttt{e}_f}]\!]_{\texttt e}\texttt{ {\color{rgb(145,80,110)}global\_this} [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
 
 La fonction $\texttt{{\color{rgb(145,80,110)}call}}$ appelle la fonction $\texttt{call}$ de l'objet fonction avec le $\texttt{this}$ et la séquence de paramètres. Si ce n'est pas un objet fonction et qu'on ne peut donc pas l'appeler, une exception $\texttt{TypeError}$ est levée. On associe l'objet $\texttt{{\color{rgb(145,80,110)}global\_this}}$ ([19](https://262.ecma-international.org/13.0/#sec-global-object)) au $\texttt{this}$ de la fonction. Cet objet est l'objet global de l'environnement d'exécution.
 
-​	$[\![{\color{teal}\texttt{e.x}\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}}]\!]_{\texttt e} =\ \texttt{let o = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in {\color{rgb(145,80,110)}call} (}\texttt{{\color{rgb(145,80,110)}get\_property} o }[\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\texttt{) o [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
+​	$[\![{\texttt{{\color{teal}e}.{\color{teal}x}}\texttt{(}\ {\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{e}_n}\ \texttt{)}}]\!]_{\texttt e} =\ \texttt{let o = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in {\color{rgb(145,80,110)}call} (}\texttt{{\color{rgb(145,80,110)}get\_property} o }[\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\texttt{) o [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
 
 L'appel d'une méthode est similaire à l'appel de fonction sur une propriété mais on associe l'objet sur lequel on a accédé à la propriété au $\texttt{this}$ de la fonction.
 
-​	$[\![{\color{teal}\texttt{\{}\ \texttt{x}_1\texttt{:}\texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{x}_n\texttt{:}\texttt{e}_n\ \texttt{\}}}]\!]_{\texttt e} = \texttt{\{}$
+​	$[\![{\texttt{\{}\ {\color{teal}\texttt{x}_1}\texttt{:}{\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{x}_n}\texttt{:}{\color{teal}\texttt{e}_n}\ \texttt{\}}}]\!]_{\texttt e} = \texttt{\{}$
 ​	$\quad \texttt{properties = ref \{..\} } \texttt{\{}\ {\color{teal}\texttt{x}_1}\texttt{=}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ {\color{teal}\texttt{x}_n}\texttt{=}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{\}}$
 ​	$\quad \texttt{prototype = ref (Object | }\unicode{96}\texttt{null) {\color{rgb(145,80,110)}object\_prototype})} $
 ​	$\texttt{\}}$
 
 $\texttt{{\color{rgb(145,80,110)}object\_prototype}}$ ([20.1.3](https://262.ecma-international.org/13.0/#sec-properties-of-the-object-prototype-object)) est le prototype donné par défaut aux objets. Les objets de base héritent donc des propriétés de cet objet. Cet objet a notamment une propriété $\texttt{\_\_proto\_\_}$ ([20.1.3.8](https://262.ecma-international.org/13.0/#sec-object.prototype.__proto__)) qui a un comportement spécial qui permet de modifier le champ $\texttt{prototype}$ en même temps qu'on la modifie. C'est comme ça qu'on peut modifier le prototype d'un objet.
 
-​	$[\![{\color{teal}\texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m\ \texttt{\}}}]\!]_{\texttt e} = \texttt{\{}$
+​	$[\![{\texttt{function} \ \texttt{(}\ {\color{teal}\texttt{x}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{x}_n}\ \texttt{)}\ \texttt{\{}\ {\color{teal}\texttt{s}_1}\ {\color{gray}\cdots}\ {\color{teal}\texttt{s}_m}\ \texttt{\}}}]\!]_{\texttt e} = \texttt{\{}$
 ​	$\quad \texttt{properties = ref \{..\} \{\};}$
 ​	$\quad \texttt{prototype = ref (Object | }\unicode{96}\texttt{null) {\color{rgb(145,80,110)}function\_prototype});} $
 ​	$\quad \texttt{call = fun (this : Value) (params : [Value*]) : Value =}$
@@ -193,9 +200,7 @@ $\texttt{{\color{rgb(145,80,110)}object\_prototype}}$ ([20.1.3](https://262.ecma
 ​	$\texttt{\}}$
 
 Une fonction est un objet mais son prototype par défaut est $\texttt{{\color{rgb(145,80,110)}function\_prototype}}$ ([20.2.3](https://262.ecma-international.org/13.0/#sec-properties-of-the-function-prototype-object)).
-
 En JavaScript, on peut passer autant de paramètres que l'on veut à une fonction, peu importe le nombre de paramètres attendus. Les paramètres non fournis sont alors initialisés à $\texttt{undefined}$ et les paramètres en trop sont ignorés. La fonction $\texttt{call}$ reçoit la séquence de paramètres passés lors de l'appel et utilise un pattern matching sur cette séquence pour appeler la vraie fonction avec les bonnes valeurs en paramètres. Le pattern matching est généré en fonction du nombre de paramètres réellement attendus.
-
 Les instructions $\texttt{return}$ sont traduites par une levée d'exception avec la valeur à retourner. La fonction $\texttt{call}$ capture cette exception et retourne la valeur.
 
 ### Opérateurs sur une propriété
@@ -220,35 +225,48 @@ Il faudrait pouvoir passer en paramètre un pattern aux fonctions comme $\texttt
 - $\texttt{set}$ : modifie la valeur de la propriété et l'ajoute si elle n'existe pas.
 - $\texttt{delete}$ : supprime la propriété.
 
+On utilise ici $\texttt{[]}$ pour désigner le type vide, qui n'a pas de valeur, comme $\texttt{unit}$ en OCaml.
+
 ### Instructions
 
 ​	$[\![\ ]\!]_{\texttt s} = \unicode{96}\texttt{undefined}$
 
 Une fonction JavaScript renvoie $\texttt{undefined}$ par défaut, donc la traduction d'une liste d'instructions vaut $\unicode{96}\texttt{undefined}$.
 
-​	$[\![{\color{teal}\texttt{e;}\ {\color{gray}\cdots}\ }]\!]_{\texttt s} = \texttt{let \_ = } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
+​	$[\![{\texttt{{\color{teal}e};}\ {\color{gray}\cdots}\ }]\!]_{\texttt s} = \texttt{let \_ = } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
 On utilise le "$\texttt{\_}$" pour ignorer la valeur de l'expression.
 
-​	$[\![{\color{teal}\texttt{let x = e;}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} =$
+​	$[\![{\texttt{let {\color{teal}x} = {\color{teal}e};}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} =$
 <span style="display:inline-block;width:24em;">		$\texttt{let {\color{teal}x} = ref Value }\unicode{96}\texttt{undefined in}$</span>$\rightarrow\ $ Déclaration, déplacée au début du bloc
 <span style="display:inline-block;width:24em;">		$\texttt{let \_ = {\color{teal}x} := } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$</span>$\rightarrow\ $ Initialisation
 
 En JavaScript, les déclarations de variables avec $\texttt{let}$ sont remontées au début de leur bloc. Si on essaye de récupérer la valeur d'une variable avant son initialisation, une exception $\texttt{ReferenceError}$ est levée. Deux déclarations ne peuvent pas avoir le même nom dans une même bloc.
 
-​	$[\![{\color{teal}\texttt{if (e) s}_1\texttt{ else s}_2}\ {\color{gray}\cdots}]\!]_{\texttt s} =$
+​	$[\![{\texttt{if ({\color{teal}e}) {\color{teal}s}}{\color{teal}_1}\texttt{ else {\color{teal}s}}{\color{teal}_2}}\texttt{ }{\color{gray}\cdots}]\!]_{\texttt s} =$
 ​	$\quad\texttt{let \_ = }$
 ​	$\quad\quad\texttt{match } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ with}$
 ​	$\quad\quad\texttt{| \_ \& (}\unicode{96}\texttt{false | }\unicode{96}\texttt{undefined | }\unicode{96}\texttt{null | "" | 0) -> } [\![{\color{teal}\texttt{s}_2}]\!]_{\texttt s}$
 ​	$\quad\quad\texttt{| \_ -> } [\![{\color{teal}\texttt{s}_1}]\!]_{\texttt s}$
 ​	$\quad\texttt{in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
-En JavaScript, les valeurs $\unicode{96}\texttt{false}$, $\unicode{96}\texttt{undefined}$, $\unicode{96}\texttt{null}$, $\texttt{""}$ (chaîne de caractères vide) et $\texttt{0}$ (entier) sont considérées comme fausses. Les valeurs $\texttt{NaN}$ et $\texttt{0}$ (flottant) doivent aussi être considérées comme fausses mais ne sont pas prises en compte ici. Les autres valeurs sont considérées comme vraies ([7.1.2](https://262.ecma-international.org/13.0/#sec-toboolean)).
+En JavaScript, les valeurs $\unicode{96}\texttt{false}$, $\unicode{96}\texttt{undefined}$, $\unicode{96}\texttt{null}$, $\texttt{""}$ (chaîne de caractères vide) et $\texttt{0}$ (entier) sont considérées comme fausses. Les valeurs $\texttt{NaN}$ et $\texttt{0}$ (flottant) doivent aussi être considérées comme fausses mais ne sont pas prises en compte ici. Les autres valeurs sont considérées comme vraies ([7.1.2](https://262.ecma-international.org/13.0/#sec-toboolean)). On va utiliser la fonction $\texttt{\color{rgb(145,80,110)}to\_boolean}$ pour convertir une valeur en booléen de cette façon.
 
-​	$[\![{\color{teal}\texttt{return e;}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} = \texttt{raise (}\unicode{96}\texttt{return, }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{)}$
+​	$[\![{\texttt{while ({\color{teal}e}) {\color{teal}s }}}{\color{gray}\cdots}]\!]_{\texttt s} =$
+​	$\quad\texttt{let \_ = (}$
+​	$\quad\quad\texttt{(fun loop (\_ : []) : [] =}$
+​	$\quad\quad\quad\texttt{match \color{rgb(145,80,110)}to\_boolean } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ with}$
+​	$\quad\quad\quad\texttt{| }\unicode{96}\texttt{true -> let \_ = } [\![{\color{teal}\texttt{s}}]\!]_{\texttt s}\texttt{ in loop []}$
+​	$\quad\quad\quad\texttt{| }\unicode{96}\texttt{false -> []}$
+​	$\quad\quad\texttt{) []}$
+​	$\quad\texttt{) in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
+
+On transforme la boucle while en fonction récursive qui s'appelle elle-même tant que la condition est vraie. On utilise le type vide $\texttt{[]}$ comme valeur de retour et comme paramètre de la fonction récursive.
+
+​	$[\![{\texttt{return {\color{teal}e};}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} = \texttt{raise (}\unicode{96}\texttt{return, }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{)}$
 
 On lève une exception avec l'atome $\unicode{96}\texttt{return}$ pour simuler une instruction $\texttt{return}$ sans gêner les autres exceptions.
 
-​	$[\![{\color{teal}\texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}\ {\color{gray}\cdots}}]\!]_\texttt{s} = \texttt{let \_ = (} [\![{\color{teal}\texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n}]\!]_\texttt{s} \texttt{) in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
+​	$[\![{\texttt{\{}\ {\color{teal}\texttt{s}_1}\ {\color{gray}\cdots}\ {\color{teal}\texttt{s}_n}\ \texttt{\};}\ {\color{gray}\cdots}}]\!]_\texttt{s} = \texttt{let \_ = (} [\![{\color{teal}\texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n}]\!]_\texttt{s} \texttt{) in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
 Toutes les déclarations du bloc sont remontées au début de celui-ci et on utilise des parenthèses pour limiter leur portée.

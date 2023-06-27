@@ -59,7 +59,7 @@ let string_of_number (n : Float) : String =
 	| s -> s
 
 let to_boolean (value : Value) : Bool =
-	(value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = "")
+	not ((value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = ""))
 
 let print_value (value : Value) : [] =
 	match value with

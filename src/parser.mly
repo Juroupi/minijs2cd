@@ -11,7 +11,7 @@
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL
 %token TRUE FALSE NULL UNDEFINED FUNCTION LET DELETE RETURN THIS
-%token IF ELSE
+%token IF ELSE WHILE
 %token <string> STRING
 %token <string> NUMBER
 %token <string> BIGINT
@@ -47,7 +47,8 @@ statement:
 | LET name=IDENT SEMI { Some name, DeclarationStatement (name, UndefinedExpression) }
 | RETURN e=expression SEMI { None, ReturnStatement e }
 | LBRACE body=block RBRACE { None, BlockStatement body }
-| IF LPAR cond=expression RPAR s1=statement ELSE s2=statement { None, CondStatement (cond, snd s1, snd s2) }
+| IF LPAR cond=expression RPAR s1=statement ELSE s2=statement { None, IfStatement (cond, snd s1, snd s2) }
+| WHILE LPAR cond=expression RPAR s=statement { None, WhileStatement (cond, snd s) }
 ;
 
 non_statement_expression:
