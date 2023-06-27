@@ -3,7 +3,7 @@
 ## Introduction
 
 Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce](http://www.cduce.org). On se limite à une syntaxe très basique pour JavaScript qui prend en compte les objets et l'accès à leurs propriétés.
-CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML. Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$. Le typage de CDuce est dynamique, c'est à dire que les types sont déterminés à l'exécution, mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution.
+CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML. Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\N$ privé de $\texttt{5}$. Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution.
 Le typage de JavaScript est aussi dynamique, ce qui fait que la traduction vers CDuce est plus facile que vers un langage avec un typage statique.
 
 
@@ -86,6 +86,8 @@ Les types CDuces peuvent être récursifs, par exemple un type de liste d'entier
 
 ## Traduction
 
+Les fonctions en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donnée ici.
+
 ### Types
 
 #### Types de base
@@ -111,7 +113,7 @@ On représente les types $\texttt{null}$ et $\texttt{undefined}$ par les atomes 
 ​	$\ \texttt{\}}$
 
 Le champ $\texttt{properties}$ est un enregistrement qui permet de stocker les propriétés de l'objet. Les propriétés peuvent avoir des noms calculés dynamiquement en JavaScript mais pas en CDuce : on ne peut accéder à un champ d'un enregistrement qu'avec le pattern matching et son nom, qui doit être connu à la compilation. On va donc se limiter aux noms de propriétés connus à la compilation.
-Le champ $\texttt{prototype}$ permet de gérer l'héritage.
+Le champ $\texttt{prototype}$ permet de gérer l'héritage des propriétés : si un objet a un prototype, il va avoir accès aux propriétés de son prototype.
 
 ​	$[\![{\texttt{function}}]\!]_{\texttt t} = \texttt{FunctionObject} = \texttt{\{}$
 ​	$\quad\texttt{properties = ref \{..\}}$
@@ -120,7 +122,7 @@ Le champ $\texttt{prototype}$ permet de gérer l'héritage.
 ​	$\quad\texttt{..}$
 ​	$\ \texttt{\}}$
 
-Une fonction est aussi un objet mais a un champ supplémentaire $\texttt{call}$, qui est une fonction qui contient son code réel. Elle prend en paramètre une valeur qui va être associée à $\texttt{this}$ et une séquence de valeurs qui seront les arguments réels de la fonction.
+Une fonction JavaScript est aussi un objet mais a un champ supplémentaire $\texttt{call}$, qui est une fonction CDuce qui contient son code réel. Elle prend en paramètre une valeur qui va être associée à $\texttt{this}$ et une séquence de valeurs qui seront les arguments réels de la fonction.
 
 #### Type des valeurs
 
@@ -141,7 +143,7 @@ Une expression d'affectation a la valeur de l'expression de droite, la modificat
 
 ​	$[\![{\texttt{this}}]\!]_{\texttt e} = \texttt{this}$
 
-$\texttt{this}$ n'est pas une référence, il ne peut pas être modifié.
+On ne peut pas affecter une nouvelle valeur à $\texttt{this}$, donc on ne le représente pas comme une référence.
 
 ​	$[\![{\color{teal}\texttt{s}}]\!]_{\texttt e} = \texttt{{\color{teal}s}}$
 ​	$[\![{\color{teal}\texttt{i}}]\!]_{\texttt e} = \texttt{{\color{teal}i}}$
@@ -160,6 +162,7 @@ Les constantes booléennes sont traduites par les atomes correspondants.
 ​	$[\![{\color{teal}\texttt{e}}\texttt{.}{\color{teal}\texttt{x}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}get\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
 
 Pour accéder à une propriété en JavaScript, il faut d'abord chercher la propriété dans les propriétés de l'objet. Si la propriété n'est pas trouvée, il faut chercher dans les propriétés du prototype de l'objet et ainsi de suite jusqu'à la trouver ou arriver à un objet dont le prototype est $\texttt{null}$. Si la propriété est trouvée, on retourne la valeur qui lui est associée, sinon on retourne $\texttt{undefined}$. La fonction $\texttt{{\color{rgb(145,80,110)}get\_property}}$ implémente ce comportement ([10.1.8](https://262.ecma-international.org/13.0/#sec-ordinary-object-internal-methods-and-internal-slots-get-p-receiver)).
+Toutes les fonctions qui manipulent les propriétés d'un objet doivent s'assurer qu'on leur passe bien un objet. Pour cela, elles utilisent la fonction $\texttt{\color{rgb(145,80,110)}to\_object}$ ([7.1.18](https://262.ecma-international.org/13.0/#sec-toobject)) qui va convertir une valeur en objet. Seules les valeurs $\texttt{null}$ et $\texttt{undefined}$ ne peuvent pas être converties en objet, une exception $\texttt{TypeError}$ est levée dans ce cas. Les valeurs de type $\texttt{boolean}$, $\texttt{bigint}$, $\texttt{number}$ et $\texttt{string}$ sont converties respectivement en objet $\texttt{BooleanObject}$, $\texttt{BigIntObject}$, $\texttt{NumberObject}$ et $\texttt{StringObject}$, qui sont des objets avec un champ supplémentaire $\texttt{data}$ qui contient leur valeur primitive. Les objets sont laissés tels quels.
 
 ​	$[\![{\texttt{delete {\color{teal}e}.{\color{teal}x}}}]\!]_{\texttt e} = \texttt{{\color{rgb(145,80,110)}delete\_property} }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\ [\![{\color{teal}\texttt{x}}]\!]_{\texttt p}$
 
@@ -261,7 +264,7 @@ En JavaScript, les valeurs $\unicode{96}\texttt{false}$, $\unicode{96}\texttt{un
 ​	$\quad\quad\texttt{) []}$
 ​	$\quad\texttt{) in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
-On transforme la boucle while en fonction récursive qui s'appelle elle-même tant que la condition est vraie. On utilise le type vide $\texttt{[]}$ comme valeur de retour et comme paramètre de la fonction récursive.
+On transforme une boucle en fonction récursive qui s'appelle elle-même tant que la condition est vraie. On utilise le type vide $\texttt{[]}$ comme valeur de retour et comme paramètre de la fonction récursive.
 
 ​	$[\![{\texttt{return {\color{teal}e};}}\ {\color{gray}\cdots}\ ]\!]_{\texttt s} = \texttt{raise (}\unicode{96}\texttt{return, }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{)}$
 

@@ -71,6 +71,9 @@ let print out prog =
     Printf.fprintf out "]"
 
   and print_expression = function
+    | IdentifierExpression "Object" ->
+      (* conflit : l'identifiant "Object" correspond à un type dans objects.cd *)
+      Printf.fprintf out "(!__Object__)"
     | IdentifierExpression id ->
       Printf.fprintf out "(!%s)" id
     | ThisExpression ->
