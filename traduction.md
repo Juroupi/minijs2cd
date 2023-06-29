@@ -1,11 +1,17 @@
 # Traduction JavaScript vers CDuce
 
-## Introduction
+## Présentation
 
 Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce](http://www.cduce.org). On se limite à une syntaxe très basique pour JavaScript qui prend en compte les objets et l'accès à leurs propriétés.
-CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML. Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\N$ privé de $\texttt{5}$. Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution.
-Le typage de JavaScript est aussi dynamique, ce qui fait que CDuce est plus adapté pour gérer les valeurs JavaScript qu'un langage avec un typage statique.
 
+CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML.
+Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\{ x \in \N\ |\ x \not = 5\}$.
+Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution. Comme JavaScript est aussi un langage à typage dynamique, il sera plus facile de le traduire en CDuce qu'en un langage à typage statique comme OCaml.
+
+JavaScript est très permissif, on peut faire beaucoup de choses avec et il y a trop de cas particuliers. Traduire l'ensemble de JavaScript en CDuce serait possible en suivant la référence, mais serait trop long et sans grand intérêt pour ce stage. On se limite donc à un fragment de JavaScript qui permet de faire des choses intéressantes, mais qui reste assez simple à traduire.
+
+Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés, mais qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
+Le but de cette traduction pourrait être de déterminer avant l'exécution, si un programme JavaScript va s'exécuter sans erreur dans tous les cas. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
 
 ## Grammaires
 

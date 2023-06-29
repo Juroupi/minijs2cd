@@ -158,13 +158,12 @@ let is_strictly_equal (a : Value) (b : Value) : Bool =
 let is_strictly_inequal (a : Value) (b : Value) : Bool =
 	not (is_strictly_equal a b)
 
-let int_of (value : Char | String) : Int =
+let int_of_ (value : String) : Int =
 	match value with
-	| '0' -> 0 | '1' -> 1 | '2' -> 2 | '3' -> 3 | '4' -> 4
-	| '5' -> 5 | '6' -> 6 | '7' -> 7 | '8' -> 8 | '9' -> 9
-	| [ c ] -> (int_of c)
-	| [ s::Char* c ] -> ((int_of s) * 10 + (int_of c))
+	| [ ('0'--'9')+ ] & c -> (int_of c)
 	| _ -> raise [ `Invalid_argument "int_of" ]
+
+let int_of = int_of_
 
 let is_loosely_equal (a : Value) (b : Value) : Bool =
 	if same_type a b then
