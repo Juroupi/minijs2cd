@@ -44,7 +44,10 @@ rule token = parse
   | "," { COMMA }
   | "." { DOT }
   | "=" { EQUAL }
-  (* | "==" { EQUALITY } *)
+  | "==" { EQUALITY }
+  | "!=" { INEQUALITY }
+  | "===" { SEQUALITY }
+  | "!==" { SINEQUALITY }
   | eof { EOF }
   | _ { raise (UnknownCharacter (lexeme lexbuf)) }
 

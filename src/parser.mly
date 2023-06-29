@@ -11,14 +11,14 @@
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL
 %token TRUE FALSE NULL UNDEFINED FUNCTION LET DELETE RETURN THIS
-%token IF ELSE WHILE TYPEOF IN (* EQUALITY *)
+%token IF ELSE WHILE TYPEOF IN EQUALITY INEQUALITY SEQUALITY SINEQUALITY
 %token <string> STRING
 %token <string> NUMBER
 %token <string> BIGINT
 %token <string> IDENT
 
 %right EQUAL
-(* %left EQUALITY *)
+%left EQUALITY INEQUALITY SEQUALITY SINEQUALITY
 %left IN
 %nonassoc DELETE TYPEOF
 %nonassoc LPAR
@@ -65,6 +65,7 @@ non_statement_expression:
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
 | TYPEOF e=expression { TypeofExpression e }
+| e1=non_statement_expression op=binary_operator e2=expression { BinaryExpression (e1, op, e2) }
 | name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
 | name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
 | obj=non_statement_expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
@@ -86,6 +87,7 @@ expression:
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
 | TYPEOF e=expression { TypeofExpression e }
+| e1=expression op=binary_operator e2=expression { BinaryExpression (e1, op, e2) }
 | name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
 | name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
 | obj=expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
@@ -94,4 +96,11 @@ expression:
 | f=expression LPAR params=separated_list(COMMA, expression) RPAR { match f with MemberAccessExpression (obj, member) -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
 | FUNCTION LPAR params=separated_list(COMMA, IDENT) RPAR LBRACE body=block RBRACE { FunctionExpression (params, body) }
 | LBRACE properties=separated_list(COMMA, separated_pair(IDENT, COLON, expression)) RBRACE { ObjectExpression properties }
+;
+
+%inline binary_operator:
+| EQUALITY { EqualityOperator true }
+| INEQUALITY { EqualityOperator false }
+| SEQUALITY { StrictEqualityOperator true }
+| SINEQUALITY { StrictEqualityOperator false }
 ;

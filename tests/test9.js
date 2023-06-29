@@ -4,9 +4,24 @@ let p = {
     }
 };
 
-if (/* p != null && */ "f" in p /* && typeof p.f == "function" */) {
-    p.f();
+if (p != null) {
+
+    if ("f" in p) {
+
+        if (typeof p.f === "function") {
+            p.f();
+        }
+
+        else {
+            console.log("f is not a function");
+        }
+    }
+
+    else {
+        console.log("f is not in p");
+    }
 }
+
 else {
-    console.log("error");
+    console.log("p is null");
 }

@@ -1,6 +1,7 @@
 type Value = Object | `null | `undefined | Int | Float | String | Bool
 
 type Object = {
+	uid = Int;
 	properties = (ref {..});
 	prototype = (ref (Object | `null));
 	..
@@ -19,7 +20,12 @@ type PropertyOperators = {
 	delete = (Object -> []);
 }
 
+let new_uid =
+	let uid = ref (Int) 0 in
+	(fun (_ : []) : Int = uid := (!uid) + 1; !uid)
+
 let create_object (properties : {..}) (prototype : Object | `null) : Object = {
+	uid = (new_uid []);
 	properties = (ref {..} properties);
 	prototype = (ref (Object | `null) prototype);
 }
@@ -100,6 +106,25 @@ let to_object (value : Value) : Object =
 	| boolean_data & Bool -> (create_object {} object_prototype) + { boolean_data }
 	| o & Object -> o
 
+let to_primitive (obj : Object) : Value =
+	match obj with
+	| o & BigIntObject -> o.big_int_data
+	| o & NumberObject -> o.number_data
+	| o & StringObject -> o.string_data
+	| o & BooleanObject -> o.boolean_data
+	| _ -> raise "TypeError: cannot convert object to primitive"
+
+let to_number (value : Value) : Float =
+	match value with
+	| n & Float -> n
+	| `undefined -> float_of "NaN"
+	| `null -> float_of "0"
+	| `false -> float_of "0"
+	| `true -> float_of "1"
+	| s & String -> float_of s
+	| Int -> raise "TypeError: cannot convert bigint to number"
+	| o & Object -> to_number (to_primitive o)
+
 let to_boolean (value : Value) : Bool =
 	not ((value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = ""))
 
@@ -113,6 +138,56 @@ let type_of (value : Value) : String =
 	| Bool -> "boolean"
 	| FunctionObject -> "function"
 	| Object -> "object"
+
+let same_type (a : Value) (b : Value) : Bool =
+	match (a, b) with
+	| (`undefined, `undefined) -> `true
+	| (`null, `null) -> `true
+	| (Int, Int) -> `true
+	| (Float, Float) -> `true
+	| (String, String) -> `true
+	| (Bool, Bool) -> `true
+	| (Object, Object) -> `true
+	| _ -> `false
+
+let is_strictly_equal (a : Value) (b : Value) : Bool =
+	match (a, b) with
+	| (a & Object, b & Object) -> a.uid = b.uid
+	| _ -> a = b
+
+let is_strictly_inequal (a : Value) (b : Value) : Bool =
+	not (is_strictly_equal a b)
+
+let int_of (value : Char | String) : Int =
+	match value with
+	| '0' -> 0 | '1' -> 1 | '2' -> 2 | '3' -> 3 | '4' -> 4
+	| '5' -> 5 | '6' -> 6 | '7' -> 7 | '8' -> 8 | '9' -> 9
+	| [ c ] -> (int_of c)
+	| [ s::Char* c ] -> ((int_of s) * 10 + (int_of c))
+	| _ -> raise [ `Invalid_argument "int_of" ]
+
+let is_loosely_equal (a : Value) (b : Value) : Bool =
+	if same_type a b then
+		is_strictly_equal a b
+	else try
+		match (a, b) with
+		| (`null, `undefined) -> `true
+		| (`undefined, `null) -> `true
+		| (a & Float, b & String) -> is_loosely_equal a (float_of b)
+		| (a & String, b & Float) -> is_loosely_equal (float_of a) b
+		| (a & Int, b & String) -> is_loosely_equal a (int_of b)
+		| (a & String, b & Int) -> is_loosely_equal (int_of a) b
+		| (_, Bool) -> is_loosely_equal a (to_number b)
+		| (Bool, _) -> is_loosely_equal (to_number a) b
+		| (_, b & Object) -> is_loosely_equal a (to_primitive b)
+		| (a & Object, _) -> is_loosely_equal (to_primitive a) b
+		| (a & Float, b & Int) -> is_loosely_equal a (float_of (string_of b))
+		| (a & Int, b & Float) -> is_loosely_equal (float_of (string_of a)) b
+		| _ -> `false
+	with _ -> `false
+
+let is_loosely_inequal (a : Value) (b : Value) : Bool =
+	not (is_loosely_equal a b)
 
 let print_value (value : Value) : [] =
 	match value with
@@ -147,3 +222,4 @@ let __Object__ = ref (FunctionObject) (
 			| [] -> create_object {} object_prototype
 			| [ param _* ] -> to_object param
 	))
+

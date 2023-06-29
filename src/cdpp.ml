@@ -69,6 +69,12 @@ let print out prog =
       Printf.fprintf out ") "
     ) l;
     Printf.fprintf out "]"
+  
+  and string_of_binary_operator = function
+    | EqualityOperator true -> "is_loosely_equal"
+    | EqualityOperator false -> "is_loosely_inequal"
+    | StrictEqualityOperator true -> "is_strictly_equal"
+    | StrictEqualityOperator false -> "is_strictly_inequal"
 
   and print_expression = function
     | IdentifierExpression "Object" ->
@@ -96,6 +102,12 @@ let print out prog =
       Printf.fprintf out "(type_of ";
       print_expression e;
       Printf.fprintf out ")"
+    | BinaryExpression (e1, op, e2) ->
+      Printf.fprintf out "(%s (" (string_of_binary_operator op);
+      print_expression e1;
+      Printf.fprintf out ") (";
+      print_expression e2;
+      Printf.fprintf out "))"
     | InExpression (member, obj) ->
       Printf.fprintf out "(contains_property (";
       print_expression obj;
@@ -150,40 +162,30 @@ let print out prog =
       print_sequence params;
       Printf.fprintf out ")"
     | ObjectExpression properties ->
-      Printf.fprintf out "{ properties = (ref {..} {";
+      Printf.fprintf out "(create_object {";
       List.iter (fun (name, value) ->
         Printf.fprintf out " %s = (" name;
         print_expression value;
         Printf.fprintf out ")"
       ) properties;
-      Printf.fprintf out "}) ";
-      Printf.fprintf out "prototype = (ref (Object | `null) object_prototype) ";
-      Printf.fprintf out "}"
+      Printf.fprintf out "} object_prototype)"
     | FunctionExpression ([], body) ->
-      Printf.fprintf out "{ ";
-        Printf.fprintf out "properties = (ref {..} {}) ";
-        Printf.fprintf out "prototype = (ref (Object | `null) function_prototype) ";
-        Printf.fprintf out "call = (fun (this : Value) (_ : [Value*]) : Value = ";
-          Printf.fprintf out "let _ = this in try\n";
-            print_block body;
-          Printf.fprintf out "with (`return, r & Value) -> r) ";
-      Printf.fprintf out "}"
+      Printf.fprintf out "(create_function {} (fun (this : Value) (_ : [Value*]) : Value = ";
+        Printf.fprintf out "let _ = this in try\n";
+          print_block body;
+        Printf.fprintf out "with (`return, r & Value) -> r))"
     | FunctionExpression (params, body) ->
-      Printf.fprintf out "{ ";
-        Printf.fprintf out "properties = (ref {..} {}) ";
-        Printf.fprintf out "prototype = (ref (Object | `null) function_prototype) ";
-        Printf.fprintf out "call = (fun (this : Value) (params : [Value*]) : Value = ";
-          Printf.fprintf out "let _ = this in ";
-          Printf.fprintf out "let f = fun ";
-          List.iter (Printf.fprintf out "(%s : ref (Value)) ") params;
-          Printf.fprintf out " : Value = ";
-            Printf.fprintf out "try\n";
-            print_block body;
-            Printf.fprintf out "with (`return, r & Value) -> r";
-          Printf.fprintf out " in match params with";
-          print_params_pattern params;
-        Printf.fprintf out ") ";
-      Printf.fprintf out "}"
+      Printf.fprintf out "(create_function {} (fun (this : Value) (params : [Value*]) : Value = ";
+        Printf.fprintf out "let _ = this in ";
+        Printf.fprintf out "let f = fun ";
+        List.iter (Printf.fprintf out "(%s : ref (Value)) ") params;
+        Printf.fprintf out " : Value = ";
+          Printf.fprintf out "try\n";
+          print_block body;
+          Printf.fprintf out "with (`return, r & Value) -> r";
+        Printf.fprintf out " in match params with";
+        print_params_pattern params;
+      Printf.fprintf out "))"
   
   and print_params_pattern params =
     let rec list_rev_iter f = function

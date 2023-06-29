@@ -4,7 +4,7 @@
 
 Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce](http://www.cduce.org). On se limite à une syntaxe très basique pour JavaScript qui prend en compte les objets et l'accès à leurs propriétés.
 CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML. Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\N$ privé de $\texttt{5}$. Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution.
-Le typage de JavaScript est aussi dynamique, ce qui fait que la traduction vers CDuce est plus facile que vers un langage avec un typage statique.
+Le typage de JavaScript est aussi dynamique, ce qui fait que CDuce est plus adapté pour gérer les valeurs JavaScript qu'un langage avec un typage statique.
 
 
 ## Grammaires

@@ -23,7 +23,7 @@ and expression =
   | BigIntExpression of string
   | StringExpression of string
   | BooleanExpression of bool
-  (* | EqualityExpression of expression * expression *)
+  | BinaryExpression of expression * binary_operator * expression
   | NullExpression
   | UndefinedExpression
   | TypeofExpression of expression
@@ -36,3 +36,7 @@ and expression =
   | CallExpression of expression * expression list
   | MethodCallExpression of expression * string * expression list
   | FunctionExpression of string list * block
+
+and binary_operator =
+  | EqualityOperator of bool
+  | StrictEqualityOperator of bool
