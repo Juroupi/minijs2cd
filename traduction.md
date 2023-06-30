@@ -10,7 +10,7 @@ Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont
 
 JavaScript est très permissif, on peut faire beaucoup de choses avec et il y a trop de cas particuliers. Traduire l'ensemble de JavaScript en CDuce serait possible en suivant la référence, mais serait trop long et sans grand intérêt pour ce stage. On se limite donc à un fragment de JavaScript qui permet de faire des choses intéressantes, mais qui reste assez simple à traduire.
 
-Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés, mais qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
+Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés et qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
 Le but de cette traduction pourrait être de déterminer avant l'exécution, si un programme JavaScript va s'exécuter sans erreur dans tous les cas. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
 
 ## Grammaires
@@ -22,8 +22,9 @@ Le but de cette traduction pourrait être de déterminer avant l'exécution, si 
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de chaîne de caractère</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{i}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de grand nombre entier</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{n}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de nombre</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{true}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral true</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{false}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral false</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{true}\ |\ \texttt{false}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéraux booléens</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{undefined}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur indéfinie</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{null}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur nulle</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{:}\texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{x}_n\texttt{:}\texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'objet</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}{\color{gray}\cdots}\texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
@@ -130,6 +131,13 @@ Le champ $\texttt{prototype}$ permet de gérer l'héritage des propriétés : si
 
 Une fonction JavaScript est aussi un objet mais a un champ supplémentaire $\texttt{call}$, qui est une fonction CDuce qui contient son code réel. Elle prend en paramètre une valeur qui va être associée à $\texttt{this}$ et une séquence de valeurs qui seront les arguments réels de la fonction.
 
+##### Précisions
+
+Les objets ont normalement un champ $\texttt{extensible}$ qui indique si on peut ajouter des propriétés à l'objet ou modifier son prototype.
+Il y a aussi deux types de propriétés différentes pour les objets : les valeurs et les accesseurs (paire getter/setter), qui ont elles-mêmes des [champs](https://262.ecma-international.org/13.0/#table-object-property-attributes) qui modifient leur comportement. Par exemple, une propriété peut être non modifiable.
+D'autres types d'objets existent aussi, comme les tableaux, qui ont un comportement particulier dans leur accès aux propriétés.
+On utilise une version très simplifiée du fonctionnement des objets dans cette traduction, qui ne prend pas en compte ces détails.
+
 #### Type des valeurs
 
 Une valeur JavaScript aura le type suivant en CDuce, qu'on va appeler $\texttt{Value}$ : $\texttt{Bool}\ \texttt{|}\ \texttt{Int}\ \texttt{|}\ \texttt{Float}\ \texttt{|}\ \texttt{String}\ \texttt{|}\ \unicode{96}\texttt{null}\ \texttt{|}\ \unicode{96}\texttt{undefined}\ \texttt{|}\ \texttt{Object}\ \texttt{|}\ \texttt{FunctionObject}$.
@@ -182,7 +190,8 @@ Si la propriété existe dans l'objet, on modifie sa valeur. Sinon, on la crée.
 
 La fonction $\texttt{{\color{rgb(145,80,110)}call}}$ appelle la fonction $\texttt{call}$ de l'objet fonction avec le $\texttt{this}$ et la séquence de paramètres. Si ce n'est pas un objet fonction et qu'on ne peut donc pas l'appeler, une exception $\texttt{TypeError}$ est levée. On associe l'objet $\texttt{{\color{rgb(145,80,110)}global\_this}}$ ([19](https://262.ecma-international.org/13.0/#sec-global-object)) au $\texttt{this}$ de la fonction. Cet objet est l'objet global de l'environnement d'exécution.
 
-​	$[\![{\texttt{{\color{teal}e}.{\color{teal}x}}\texttt{(}\ {\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{e}_n}\ \texttt{)}}]\!]_{\texttt e} =\ \texttt{let o = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in {\color{rgb(145,80,110)}call} (}\texttt{{\color{rgb(145,80,110)}get\_property} o }[\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\texttt{) o [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
+​	$[\![{\texttt{{\color{teal}e}.{\color{teal}x}}\texttt{(}\ {\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{e}_n}\ \texttt{)}}]\!]_{\texttt e} =$
+​		$\texttt{let o = }[\![{\color{teal}\texttt{e}}]\!]_{\texttt e}\texttt{ in {\color{rgb(145,80,110)}call} (}\texttt{{\color{rgb(145,80,110)}get\_property} o }[\![{\color{teal}\texttt{x}}]\!]_{\texttt p}\texttt{) o [}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{]}$
 
 L'appel d'une méthode est similaire à l'appel de fonction sur une propriété mais on associe l'objet sur lequel on a accédé à la propriété au $\texttt{this}$ de la fonction.
 
@@ -201,11 +210,11 @@ $\texttt{{\color{rgb(145,80,110)}object\_prototype}}$ ([20.1.3](https://262.ecma
 ​	$\quad\quad\quad\texttt{try }[\![{\color{teal} \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m }]\!]_{\texttt s}\texttt{ with (}\unicode{96}\texttt{return, r \& Value) -> r}$
 ​	$\quad\quad\texttt{in}$
 ​	$\quad\quad\texttt{match params with}$
-​	$\quad\quad\texttt{| [] -> f (ref Value }\unicode{96}\texttt{undefined}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
-​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\texttt{ ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
-​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\texttt{\color{teal} x}{\color{teal}_2} \texttt{ ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)} \texttt{ (ref Value {\color{teal}x}}{\color{teal}_2}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [] -> f (ref Value}\ \unicode{96}\texttt{undefined}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value }\unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [}\ \texttt{{\color{teal}x}}{\color{teal}_{1\ }}\texttt{] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value}\ \unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [}\ \texttt{{\color{teal}x}}{\color{teal}_1}\texttt{\color{teal} x}{\color{teal}_2}\ \texttt{] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)} \texttt{ (ref Value {\color{teal}x}}{\color{teal}_2}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value}\ \unicode{96}\texttt{undefined}{\color{teal}_n}\texttt{)}$
 ​	$\quad\quad\texttt{| }{\color{gray}\cdots}$
-​	$\quad\quad\texttt{| [ {\color{teal}x}}{\color{teal}_1}\ {\color{gray}\cdots}\ \ \texttt{{\color{teal}x}}{\color{teal}_n}\texttt{ \_* ] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value {\color{teal}x}}{\color{teal}_n}\texttt{)}$
+​	$\quad\quad\texttt{| [}\ \texttt{{\color{teal}x}}{\color{teal}_1}\ {\color{gray}\cdots}\ \ \texttt{{\color{teal}x}}{\color{teal}_n}\texttt{ \_*}_{\ }\texttt{] -> f (ref Value {\color{teal}x}}{\color{teal}_1}\texttt{)}\ {\color{gray}\cdots}\ \texttt{(ref Value {\color{teal}x}}{\color{teal}_n}\texttt{)}$
 ​	$\texttt{\}}$
 
 Une fonction est un objet mais son prototype par défaut est $\texttt{{\color{rgb(145,80,110)}function\_prototype}}$ ([20.2.3](https://262.ecma-international.org/13.0/#sec-properties-of-the-function-prototype-object)).

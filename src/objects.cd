@@ -91,6 +91,7 @@ let string_of_number (n : Float) : String =
 	match string_of n with
 	| [ s::((Char \ '.')*) '.' '0'* ] -> s
 	| [ s::((Char \ '.')* '.' (Char \ '0')*) '0'* ] -> s
+	| "nan" -> "NaN"
 	| s -> s
 
 let string_of_boolean (b : Bool) : String =
@@ -106,13 +107,15 @@ let to_object (value : Value) : Object =
 	| boolean_data & Bool -> (create_object {} object_prototype) + { boolean_data }
 	| o & Object -> o
 
-let to_primitive (obj : Object) : Value =
-	match obj with
+let to_primitive (value : Value) : Value =
+	match value with
 	| o & BigIntObject -> o.big_int_data
 	| o & NumberObject -> o.number_data
 	| o & StringObject -> o.string_data
 	| o & BooleanObject -> o.boolean_data
-	| _ -> raise "TypeError: cannot convert object to primitive"
+	| FunctionObject -> "function(){}"
+	| Object -> "[object Object]"
+	| _ -> value
 
 let to_number (value : Value) : Float =
 	match value with
@@ -124,6 +127,22 @@ let to_number (value : Value) : Float =
 	| s & String -> float_of s
 	| Int -> raise "TypeError: cannot convert bigint to number"
 	| o & Object -> to_number (to_primitive o)
+
+let to_numeric (value : Value) : Value =
+	match to_primitive value with
+	| i & Int -> i
+	| value -> to_number value
+
+let to_string (value : Value) : String =
+	match value with
+	| `undefined -> "undefined"
+	| `null -> "null"
+	| `false -> "false"
+	| `true -> "true"
+	| s & String -> s
+	| i & Int -> string_of i
+	| f & Float -> string_of_number f
+	| o & Object -> to_string (to_primitive o)
 
 let to_boolean (value : Value) : Bool =
 	not ((value = (float_of "NaN")) || (value = (float_of "0")) || (value = 0) || (value = `false) || (value = `null) || (value = `undefined) || (value = ""))
@@ -187,6 +206,16 @@ let is_loosely_equal (a : Value) (b : Value) : Bool =
 
 let is_loosely_inequal (a : Value) (b : Value) : Bool =
 	not (is_loosely_equal a b)
+
+let operator_add (a : Value) (b : Value) : Value =
+	match (to_primitive a, to_primitive b) with
+	| (a & String, b) -> a @ (to_string b)
+	| (a, b & String) -> (to_string a) @ b
+	| (a, b) ->
+		match (to_numeric a, to_numeric b) with
+		| (a & Float, b & Float) -> a + b
+		| (a & Int, b & Int) -> a + b
+		| _ -> raise "TypeError: Cannot mix BigInt and other types, use explicit conversions"
 
 let print_value (value : Value) : [] =
 	match value with

@@ -40,3 +40,4 @@ and expression =
 and binary_operator =
   | EqualityOperator of bool
   | StrictEqualityOperator of bool
+  | AdditionOperator

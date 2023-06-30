@@ -48,6 +48,7 @@ rule token = parse
   | "!=" { INEQUALITY }
   | "===" { SEQUALITY }
   | "!==" { SINEQUALITY }
+  | "+" { PLUS }
   | eof { EOF }
   | _ { raise (UnknownCharacter (lexeme lexbuf)) }
 

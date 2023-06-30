@@ -75,6 +75,7 @@ let print out prog =
     | EqualityOperator false -> "is_loosely_inequal"
     | StrictEqualityOperator true -> "is_strictly_equal"
     | StrictEqualityOperator false -> "is_strictly_inequal"
+    | AdditionOperator -> "operator_add"
 
   and print_expression = function
     | IdentifierExpression "Object" ->

@@ -9,7 +9,7 @@
     all_properties := StringSet.add name !all_properties
 %}
 
-%token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL
+%token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL PLUS
 %token TRUE FALSE NULL UNDEFINED FUNCTION LET DELETE RETURN THIS
 %token IF ELSE WHILE TYPEOF IN EQUALITY INEQUALITY SEQUALITY SINEQUALITY
 %token <string> STRING
@@ -20,6 +20,7 @@
 %right EQUAL
 %left EQUALITY INEQUALITY SEQUALITY SINEQUALITY
 %left IN
+%left PLUS
 %nonassoc DELETE TYPEOF
 %nonassoc LPAR
 %left DOT
@@ -103,4 +104,5 @@ expression:
 | INEQUALITY { EqualityOperator false }
 | SEQUALITY { StrictEqualityOperator true }
 | SINEQUALITY { StrictEqualityOperator false }
+| PLUS { AdditionOperator }
 ;
