@@ -6,12 +6,12 @@ Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce
 
 CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML.
 Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\{ x \in \N\ |\ x \not = 5\}$.
-Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution. Comme JavaScript est aussi un langage à typage dynamique, il sera plus facile de le traduire en CDuce qu'en un langage à typage statique comme OCaml.
+Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types et peut changer pendant l'exécution. Comme JavaScript est aussi un langage à typage dynamique, il sera plus facile de le traduire en CDuce qu'en un langage à typage statique comme OCaml.
 
-JavaScript est très permissif, on peut faire beaucoup de choses avec et il y a trop de cas particuliers. Traduire l'ensemble de JavaScript en CDuce serait possible en suivant la référence, mais serait trop long et sans grand intérêt pour ce stage. On se limite donc à un fragment de JavaScript qui permet de faire des choses intéressantes, mais qui reste assez simple à traduire.
+JavaScript est très permissif et la référence contient beaucoup de cas particuliers. Traduire l'ensemble de JavaScript en CDuce serait possible en suivant la référence, mais serait trop long et sans grand intérêt pour ce stage. On se limite donc à un fragment de JavaScript qui permet de faire des choses intéressantes, mais qui reste assez simple à traduire.
 
 Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés et qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
-Le but de cette traduction pourrait être de déterminer avant l'exécution, si un programme JavaScript va s'exécuter sans erreur dans tous les cas. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
+Le but de cette traduction pourrait être de déterminer, avant l'exécution, si aucune des exécutions possibles d'un programme JavaScript ne va générer d'erreur. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
 
 ## Grammaires
 
@@ -85,15 +85,18 @@ Le but de cette traduction pourrait être de déterminer avant l'exécution, si 
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}_1\texttt{ \unicode{38} t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Intersection</span>
 
 <span style="display:inline-block;width:26em;">$\texttt{p} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Patterns**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x \unicode{38} t}$</span>Assure que $\texttt{x}$ est de type $\texttt{t}$
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x \unicode{38} \{}\ \texttt{x}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\ \texttt{..\}}$</span>Extraction des champs d'un enregistrement
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x \unicode{38} [}\ \texttt{x}_1\ {\color{gray}\cdots} \ \ \texttt{x}_n\ \texttt{]}$</span>Extraction des éléments du séquence
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x}$</span>Association d'un nom à l'expression
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}$</span>Assure que l'expression est de type $\texttt{t}$
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\ \texttt{= }\texttt{p}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\ \texttt{= }\texttt{p}_n\ \texttt{..\}}$</span>Extraction des champs d'un enregistrement
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{[}\ \texttt{p}_1\ {\color{gray}\cdots} \ \ \texttt{p}_n\ \texttt{]}$</span>Extraction des éléments du séquence
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{p}_1\ \texttt{\unicode{38} p}_2$</span>Les deux à la fois
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{p}_1\ \texttt{| p}_2$</span>Un des deux
 
-Les types CDuces peuvent être récursifs, par exemple un type de liste d'entiers peut s'écrire : $\texttt{type t = }\unicode{96}\texttt{nil | (Int, t)}$.
+Les types CDuce peuvent être récursifs, par exemple un type de liste d'entiers peut s'écrire : $\texttt{type t = }\unicode{96}\texttt{nil | (Int, t)}$.
 
 ## Traduction
 
-Les fonctions en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donnée ici.
+Les fonctions en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donné ici.
 
 ### Types
 
@@ -264,7 +267,7 @@ En JavaScript, les déclarations de variables avec $\texttt{let}$ sont remontée
 ​	$[\![{\texttt{if ({\color{teal}e}) {\color{teal}s}}{\color{teal}_1}\texttt{ else {\color{teal}s}}{\color{teal}_2}}\texttt{ }{\color{gray}\cdots}]\!]_{\texttt s} =$
 ​	$\quad\texttt{let \_ = }$
 ​	$\quad\quad\texttt{match } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ with}$
-​	$\quad\quad\texttt{| \_ \& (}\unicode{96}\texttt{false | }\unicode{96}\texttt{undefined | }\unicode{96}\texttt{null | "" | 0) -> } [\![{\color{teal}\texttt{s}_2}]\!]_{\texttt s}$
+​	$\quad\quad\texttt{| (}\unicode{96}\texttt{false | }\unicode{96}\texttt{undefined | }\unicode{96}\texttt{null | "" | 0) -> } [\![{\color{teal}\texttt{s}_2}]\!]_{\texttt s}$
 ​	$\quad\quad\texttt{| \_ -> } [\![{\color{teal}\texttt{s}_1}]\!]_{\texttt s}$
 ​	$\quad\texttt{in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
