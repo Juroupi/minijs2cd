@@ -13,9 +13,68 @@ let print out prog =
     List.iter print_declaration prog.body.declarations;
     print_statements prog.body.statements;
     Printf.fprintf out ")"
+
+  and print_object_init_value obj =
+    Printf.fprintf out "{ uid=0 properties=(ref {";
+    print_properties print_type ~optprops:obj.optprops obj.props;
+    Printf.fprintf out " } {";
+    print_properties print_init_value obj.props;
+    Printf.fprintf out " }) prototype=(ref (";
+    print_type obj.proto;
+    Printf.fprintf out ") (";
+    print_init_value obj.proto;
+    Printf.fprintf out ")) }"
+
+  and print_init_value = function
+    | StringType -> Printf.fprintf out "\"\""
+    | NumberType -> Printf.fprintf out "(float_of \"0\")"
+    | BigIntType -> Printf.fprintf out "0"
+    | BooleanType _ -> Printf.fprintf out "`false"
+    | ObjectType obj -> print_object_init_value obj
+    | FunctionType obj -> print_object_init_value obj
+    | NoneType -> failwith "Cdpp.print_init_value"
+    | AnyType -> Printf.fprintf out "`undefined"
+    | NullType -> Printf.fprintf out "`null"
+    | UndefinedType -> Printf.fprintf out "`undefined"
+    | UnionType (t1, _) -> print_init_value t1
   
-  and print_declaration name =
-    Printf.fprintf out "let %s = ref (Value) `undefined in\n" name
+  and print_properties print ?(optprops = StringSet.empty) props =
+    StringMap.iter (fun name value_type ->
+      let opt = if StringSet.mem name optprops then "?" else "" in
+      Printf.fprintf out " %s=%s(" name opt;
+      print value_type;
+      Printf.fprintf out ")"
+    ) props;
+  
+  and print_object_type obj =
+    Printf.fprintf out "{ uid=Int properties=(ref {";
+    print_properties print_type ~optprops:obj.optprops obj.props;
+    Printf.fprintf out " }) prototype=(ref (";
+    print_type obj.proto;
+    Printf.fprintf out ")) }"
+  
+  and print_type = function
+    | NullType -> Printf.fprintf out "`null"
+    | UndefinedType -> Printf.fprintf out "`undefined"
+    | BooleanType _ -> Printf.fprintf out "Bool"
+    | NumberType -> Printf.fprintf out "Float"
+    | BigIntType -> Printf.fprintf out "Int"
+    | StringType -> Printf.fprintf out "String"
+    | ObjectType obj -> print_object_type obj
+    | FunctionType obj -> print_object_type obj
+    | NoneType -> Printf.fprintf out "Empty"
+    | AnyType -> Printf.fprintf out "Value"
+    | UnionType (t1, t2) ->
+      print_type t1;
+      Printf.fprintf out " | ";
+      print_type t2
+  
+  and print_declaration { name; total_type } =
+    Printf.fprintf out "let %s = ref (" name;
+    print_type total_type;
+    Printf.fprintf out ") (";
+    print_init_value total_type;
+    Printf.fprintf out ") in\n"
   
   and print_block body =
     List.iter print_declaration body.declarations;
@@ -76,93 +135,187 @@ let print out prog =
     | StrictEqualityOperator true -> "is_strictly_equal"
     | StrictEqualityOperator false -> "is_strictly_inequal"
     | AdditionOperator -> "operator_add"
+  
+  and ignore_expression e res =
+    Printf.fprintf out "(let _ = ";
+    print_expression e;
+    Printf.fprintf out " in %s)" res
 
-  and print_expression = function
-    | IdentifierExpression "Object" ->
+  and print_expression te =
+    match te.value, te.value_type with
+
+    | IdentifierExpression "Object", _ ->
       (* conflit : l'identifiant "Object" correspond à un type dans objects.cd *)
       Printf.fprintf out "(!__Object__)"
-    | IdentifierExpression id ->
+    | IdentifierExpression id, _ ->
       Printf.fprintf out "(!%s)" id
-    | ThisExpression ->
+
+    | ThisExpression, _ ->
       Printf.fprintf out "this"
-    | NumberExpression n ->
+
+    | NumberExpression n, _ ->
       Printf.fprintf out "(float_of \"%s\")" n
-    | BigIntExpression n ->
+    | BigIntExpression n, _ ->
       Printf.fprintf out "%s" n
-    | StringExpression s ->
+    | StringExpression s, _ ->
       Printf.fprintf out "\"%s\"" s
-    | BooleanExpression true ->
+    | BooleanExpression true, _ ->
       Printf.fprintf out "`true"
-    | BooleanExpression false ->
+    | BooleanExpression false, _ ->
       Printf.fprintf out "`false"
-    | NullExpression ->
+    | NullExpression, _ ->
       Printf.fprintf out "`null"
-    | UndefinedExpression ->
+    | UndefinedExpression, _ ->
       Printf.fprintf out "`undefined"
-    | TypeofExpression e ->
+
+    | TypeofExpression { value_type = UndefinedType }, _ ->
+      Printf.fprintf out "\"undefined\""
+    | TypeofExpression { value_type = NullType }, _ ->
+      Printf.fprintf out "\"object\""
+    | TypeofExpression { value_type = BigIntType }, _ ->
+      Printf.fprintf out "\"bigint\""
+    | TypeofExpression { value_type = NumberType }, _ ->
+      Printf.fprintf out "\"number\""
+    | TypeofExpression { value_type = StringType }, _ ->
+      Printf.fprintf out "\"string\""
+    | TypeofExpression { value_type = BooleanType _ }, _ ->
+      Printf.fprintf out "\"boolean\""
+    | TypeofExpression { value_type = FunctionType _ }, _ ->
+      Printf.fprintf out "\"function\""
+    | TypeofExpression { value_type = ObjectType _ }, _ ->
+      Printf.fprintf out "\"object\""
+    | TypeofExpression e, _ ->
       Printf.fprintf out "(type_of ";
       print_expression e;
       Printf.fprintf out ")"
-    | BinaryExpression (e1, op, e2) ->
+
+    | BinaryExpression (e1, op, e2), _ ->
       Printf.fprintf out "(%s (" (string_of_binary_operator op);
       print_expression e1;
       Printf.fprintf out ") (";
       print_expression e2;
       Printf.fprintf out "))"
-    | InExpression (member, obj) ->
+
+    | InExpression (_, obj), BooleanType (Some true) ->
+      ignore_expression obj "`true"
+    | InExpression (_, obj), BooleanType (Some false) ->
+      ignore_expression obj "`false"    
+    | InExpression (member, obj), _ ->
       Printf.fprintf out "(contains_property (";
       print_expression obj;
       Printf.fprintf out ") __%s_prop__" member;
       Printf.fprintf out ")"
-    | AssignmentExpression (name, value) ->
+
+    | AssignmentExpression (name, value), _ ->
       Printf.fprintf out "(let tmp = ";
       print_expression value;
       Printf.fprintf out " in %s := tmp; tmp)" name
-    | MemberAccessExpression (obj, "__proto__") ->
+    
+    | MemberAccessExpression (obj, "__proto__"), AnyType ->
       Printf.fprintf out "(get_prototype_of (";
       print_expression obj;
       Printf.fprintf out "))"
-    | MemberAccessExpression (obj, member) ->
-      Printf.fprintf out "(get_property (";
+    | MemberAccessExpression (obj, "__proto__"), _ ->
+      Printf.fprintf out "(!(!(";
       print_expression obj;
-      Printf.fprintf out ") __%s_prop__" member;
-      Printf.fprintf out ")"
-    | MemberAssignmentExpression (obj, "__proto__", value) ->
+      Printf.fprintf out ")).prototype)"
+
+    | MemberAccessExpression (obj, member), _ ->
+      let rec print_member_access n =
+        if n <= 0 then begin
+          Printf.fprintf out "(";
+          print_expression obj;
+          Printf.fprintf out ")"
+        end else begin
+          Printf.fprintf out "(!";
+          print_member_access (n - 1);
+          Printf.fprintf out ".prototype)"
+        end
+      in
+      begin match obj.value_type = AnyType, Typing.mem_prop obj.value_type member with
+      | false, Some mem ->
+        Printf.fprintf out "((!";
+        print_member_access mem;
+        Printf.fprintf out ".properties).%s)" member
+      | _ ->
+        Printf.fprintf out "(get_property (";
+        print_expression obj;
+        Printf.fprintf out ") __%s_prop__" member;
+        Printf.fprintf out ")"
+      end
+
+    | MemberAssignmentExpression (obj, "__proto__", value), AnyType ->
       Printf.fprintf out "(set_prototype_of (";
       print_expression obj;
       Printf.fprintf out ") (";
       print_expression value;
       Printf.fprintf out "))"
-    | MemberAssignmentExpression (obj, member, value) ->
+    | MemberAssignmentExpression (obj, "__proto__", value), _ ->
+      Printf.fprintf out "(let tmp = ";
+      print_expression value;
+      Printf.fprintf out " in (";
+      print_expression obj;
+      Printf.fprintf out ").prototype := tmp; tmp)"
+      
+    | MemberAssignmentExpression ({ value_type = ObjectType _ } as obj, member, value), _ ->
+      Printf.fprintf out "let tmp = ";
+      print_expression obj;
+      Printf.fprintf out " in tmp.properties := (!tmp.properties) + { %s=(" member;
+      print_expression value;
+      Printf.fprintf out ") }"
+    | MemberAssignmentExpression (obj, member, value), _ ->
       Printf.fprintf out "(set_property (";
       print_expression obj;
       Printf.fprintf out ") __%s_prop__" member;
       Printf.fprintf out " (";
       print_expression value;
       Printf.fprintf out "))"
-    | DeleteExpression (_, "") ->
-      Printf.fprintf out "`true"
-    | DeleteExpression (obj, member) ->
+
+    | DeleteExpression (obj, ""), _ ->
+      ignore_expression obj "`true"
+    | DeleteExpression (obj, member), AnyType ->
       Printf.fprintf out "(delete_property (";
       print_expression obj;
       Printf.fprintf out ") __%s_prop__)" member
-    | MethodCallExpression (IdentifierExpression "console", "log", params) ->
+    | DeleteExpression (obj, member), _ ->
+      Printf.fprintf out "(let tmp = ";
+      print_expression obj;
+      Printf.fprintf out " in tmp.properties := !(tmp.properties) \\ %s; `true)" member
+
+    | MethodCallExpression ({ value = IdentifierExpression "console" }, "log", params), _ ->
       Printf.fprintf out "(print_sequence ";
       print_sequence params;
       Printf.fprintf out ")"
-    | MethodCallExpression (obj, member, params) ->
+
+    | MethodCallExpression (obj, member, params), _ ->
       Printf.fprintf out "(let o = ";
       print_expression obj;
       Printf.fprintf out " in call (get_property o __%s_prop__) o " member;
       print_sequence params;
       Printf.fprintf out ")"
-    | CallExpression (f, params) ->
+
+    | CallExpression (f, params), _ ->
       Printf.fprintf out "(call (";
       print_expression f;
       Printf.fprintf out ") global_this ";
       print_sequence params;
       Printf.fprintf out ")"
-    | ObjectExpression properties ->
+
+    | ObjectExpression properties, ObjectType obj ->
+      Printf.fprintf out "{ uid=(new_uid []) properties=(ref {";
+      print_properties print_type ~optprops:obj.optprops obj.props;
+      Printf.fprintf out " } {";
+      List.iter (fun (name, value) ->
+        Printf.fprintf out " %s=(" name;
+        print_expression value;
+        Printf.fprintf out ")"
+      ) properties;
+      Printf.fprintf out " }) prototype=(ref (";
+      print_type obj.proto;
+      Printf.fprintf out ") (";
+      print_init_value obj.proto;
+      Printf.fprintf out ")) }"
+    | ObjectExpression properties, _ ->
       Printf.fprintf out "(create_object {";
       List.iter (fun (name, value) ->
         Printf.fprintf out " %s = (" name;
@@ -170,12 +323,13 @@ let print out prog =
         Printf.fprintf out ")"
       ) properties;
       Printf.fprintf out "} object_prototype)"
-    | FunctionExpression ([], body) ->
+
+    | FunctionExpression ([], body), _ ->
       Printf.fprintf out "(create_function {} (fun (this : Value) (_ : [Value*]) : Value = ";
         Printf.fprintf out "let _ = this in try\n";
           print_block body;
         Printf.fprintf out "with (`return, r & Value) -> r))"
-    | FunctionExpression (params, body) ->
+    | FunctionExpression (params, body), _ ->
       Printf.fprintf out "(create_function {} (fun (this : Value) (params : [Value*]) : Value = ";
         Printf.fprintf out "let _ = this in ";
         Printf.fprintf out "let f = fun ";

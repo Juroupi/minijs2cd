@@ -10,7 +10,7 @@ clean_tests:
 	rm -rf tests/*.cd
 
 %.cd: %.js minijs2cd.byte
-	./minijs2cd.byte $< $@
+	./minijs2cd.byte -t $< $@
 
 %.exec: tests/%.cd
 	cduce $<

@@ -1,20 +1,28 @@
+module StringMap = Map.Make(String)
+module StringSet = Set.Make(String)
+
 type prog = {
   properties : string list;
   body : block;
 }
 
+and declaration = {
+  name : string;
+  mutable total_type : value_type;
+}
+
 and block = {
-  declarations : string list;
+  declarations : declaration list;
   statements : statement list;
 }
 
 and statement =
-  | ExpressionStatement of expression
-  | DeclarationStatement of string * expression
-  | ReturnStatement of expression
+  | ExpressionStatement of typed_expression
+  | DeclarationStatement of string * typed_expression
+  | ReturnStatement of typed_expression
   | BlockStatement of block
-  | IfStatement of expression * statement * statement
-  | WhileStatement of expression * statement
+  | IfStatement of typed_expression * statement * statement
+  | WhileStatement of typed_expression * statement
 
 and expression =
   | IdentifierExpression of string
@@ -23,19 +31,43 @@ and expression =
   | BigIntExpression of string
   | StringExpression of string
   | BooleanExpression of bool
-  | BinaryExpression of expression * binary_operator * expression
+  | BinaryExpression of typed_expression * binary_operator * typed_expression
   | NullExpression
   | UndefinedExpression
-  | TypeofExpression of expression
-  | InExpression of string * expression
-  | AssignmentExpression of string * expression
-  | MemberAccessExpression of expression * string
-  | MemberAssignmentExpression of expression * string * expression
-  | DeleteExpression of expression * string
-  | ObjectExpression of (string * expression) list
-  | CallExpression of expression * expression list
-  | MethodCallExpression of expression * string * expression list
+  | TypeofExpression of typed_expression
+  | InExpression of string * typed_expression
+  | AssignmentExpression of string * typed_expression
+  | MemberAccessExpression of typed_expression * string
+  | MemberAssignmentExpression of typed_expression * string * typed_expression
+  | DeleteExpression of typed_expression * string
+  | ObjectExpression of (string * typed_expression) list
+  | CallExpression of typed_expression * typed_expression list
+  | MethodCallExpression of typed_expression * string * typed_expression list
   | FunctionExpression of string list * block
+
+and value_type =
+  | NoneType
+  | AnyType
+  | NumberType
+  | BigIntType
+  | StringType
+  | BooleanType of bool option
+  | NullType
+  | UndefinedType
+  | ObjectType of object_type
+  | FunctionType of object_type
+  | UnionType of value_type * value_type
+
+and object_type = {
+  mutable proto : value_type;
+  mutable props : value_type StringMap.t;
+  mutable optprops : StringSet.t;
+}
+
+and typed_expression = {
+  mutable value_type : value_type;
+  value : expression;
+}
 
 and binary_operator =
   | EqualityOperator of bool

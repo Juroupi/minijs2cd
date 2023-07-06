@@ -7,6 +7,8 @@
 
   let add_property name =
     all_properties := StringSet.add name !all_properties
+  
+  let make_typed_expression value = { value_type = AnyType; value }
 %}
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL PLUS
@@ -40,22 +42,27 @@ block:
     let declarations = List.filter_map (fun d -> d) names in
     if List.length (StringSet.elements (StringSet.of_list declarations)) <> List.length declarations then
       failwith "SyntaxError";
+    let declarations = List.map (fun name -> { name; total_type = AnyType }) declarations in
     { declarations; statements; }
   }
 ;
 
 statement:
-| e=non_statement_expression SEMI { None, ExpressionStatement e }
-| LET name=IDENT EQUAL value=expression SEMI { Some name, DeclarationStatement (name, value) }
-| LET name=IDENT SEMI { Some name, DeclarationStatement (name, UndefinedExpression) }
-| RETURN e=expression SEMI { None, ReturnStatement e }
+| e=non_statement_typed_expression SEMI { None, ExpressionStatement e }
+| LET name=IDENT EQUAL value=typed_expression SEMI { Some name, DeclarationStatement (name, value) }
+| LET name=IDENT SEMI { Some name, DeclarationStatement (name, make_typed_expression UndefinedExpression) }
+| RETURN e=typed_expression SEMI { None, ReturnStatement e }
 | LBRACE body=block RBRACE { None, BlockStatement body }
-| IF LPAR cond=expression RPAR s1=statement ELSE s2=statement { None, IfStatement (cond, snd s1, snd s2) }
-| WHILE LPAR cond=expression RPAR s=statement { None, WhileStatement (cond, snd s) }
+| IF LPAR cond=typed_expression RPAR s1=statement ELSE s2=statement { None, IfStatement (cond, snd s1, snd s2) }
+| WHILE LPAR cond=typed_expression RPAR s=statement { None, WhileStatement (cond, snd s) }
+;
+
+non_statement_typed_expression:
+| LPAR e=typed_expression RPAR { e }
+| e=non_statement_expression { make_typed_expression e }
 ;
 
 non_statement_expression:
-| LPAR e=expression RPAR { e }
 | id=IDENT { IdentifierExpression id }
 | THIS { ThisExpression }
 | n=NUMBER { NumberExpression n }
@@ -65,19 +72,23 @@ non_statement_expression:
 | FALSE { BooleanExpression false }
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
-| TYPEOF e=expression { TypeofExpression e }
-| e1=non_statement_expression op=binary_operator e2=expression { BinaryExpression (e1, op, e2) }
-| name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
-| name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
-| obj=non_statement_expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
-| obj=non_statement_expression DOT name=IDENT EQUAL value=expression { add_property name; MemberAssignmentExpression (obj, name, value) }
-| DELETE e=expression { match e with MemberAccessExpression (obj, name) -> add_property name; DeleteExpression (obj, name) | _ -> DeleteExpression (e, "") }
-| f=non_statement_expression LPAR params=separated_list(COMMA, expression) RPAR { match f with MemberAccessExpression (obj, member) -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
+| TYPEOF e=typed_expression { TypeofExpression e }
+| e1=non_statement_typed_expression op=binary_operator e2=typed_expression { BinaryExpression (e1, op, e2) }
+| name=STRING IN obj=typed_expression { add_property name; InExpression (name, obj) }
+| name=IDENT EQUAL value=typed_expression { AssignmentExpression (name, value) }
+| obj=non_statement_typed_expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
+| obj=non_statement_typed_expression DOT name=IDENT EQUAL value=typed_expression { add_property name; MemberAssignmentExpression (obj, name, value) }
+| DELETE e=typed_expression { match e with { value = MemberAccessExpression (obj, name) } -> add_property name; DeleteExpression (obj, name) | _ -> DeleteExpression (e, "") }
+| f=non_statement_typed_expression LPAR params=separated_list(COMMA, typed_expression) RPAR { match f with { value = MemberAccessExpression (obj, member) } -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
 | FUNCTION LPAR params=separated_list(COMMA, IDENT) RPAR LBRACE body=block RBRACE { FunctionExpression (params, body) }
 ;
 
+typed_expression:
+| LPAR e=typed_expression RPAR { e }
+| e=expression { make_typed_expression e }
+;
+
 expression:
-| LPAR e=expression RPAR { e }
 | id=IDENT { IdentifierExpression id }
 | THIS { ThisExpression }
 | n=NUMBER { NumberExpression n }
@@ -87,16 +98,16 @@ expression:
 | FALSE { BooleanExpression false }
 | NULL { NullExpression }
 | UNDEFINED { UndefinedExpression }
-| TYPEOF e=expression { TypeofExpression e }
-| e1=expression op=binary_operator e2=expression { BinaryExpression (e1, op, e2) }
-| name=STRING IN obj=expression { add_property name; InExpression (name, obj) }
-| name=IDENT EQUAL value=expression { AssignmentExpression (name, value) }
-| obj=expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
-| obj=expression DOT name=IDENT EQUAL value=expression { add_property name; MemberAssignmentExpression (obj, name, value) }
-| DELETE e=expression { match e with MemberAccessExpression (obj, name) -> add_property name; DeleteExpression (obj, name) | _ -> DeleteExpression (e, "") }
-| f=expression LPAR params=separated_list(COMMA, expression) RPAR { match f with MemberAccessExpression (obj, member) -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
+| TYPEOF e=typed_expression { TypeofExpression e }
+| e1=typed_expression op=binary_operator e2=typed_expression { BinaryExpression (e1, op, e2) }
+| name=STRING IN obj=typed_expression { add_property name; InExpression (name, obj) }
+| name=IDENT EQUAL value=typed_expression { AssignmentExpression (name, value) }
+| obj=typed_expression DOT name=IDENT { add_property name; MemberAccessExpression (obj, name) }
+| obj=typed_expression DOT name=IDENT EQUAL value=typed_expression { add_property name; MemberAssignmentExpression (obj, name, value) }
+| DELETE e=typed_expression { match e with { value = MemberAccessExpression (obj, name) } -> add_property name; DeleteExpression (obj, name) | _ -> DeleteExpression (e, "") }
+| f=typed_expression LPAR params=separated_list(COMMA, typed_expression) RPAR { match f with { value = MemberAccessExpression (obj, member) } -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
 | FUNCTION LPAR params=separated_list(COMMA, IDENT) RPAR LBRACE body=block RBRACE { FunctionExpression (params, body) }
-| LBRACE properties=separated_list(COMMA, separated_pair(IDENT, COLON, expression)) RBRACE { ObjectExpression properties }
+| LBRACE properties=separated_list(COMMA, separated_pair(IDENT, COLON, typed_expression)) RBRACE { ObjectExpression properties }
 ;
 
 %inline binary_operator:

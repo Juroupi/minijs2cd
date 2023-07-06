@@ -6,7 +6,8 @@ Le but de ce stage est d'arriver à traduire un fragment de JavaScript en [CDuce
 
 CDuce est un langage fonctionnel qui est adapté pour manipuler des données au format XML.
 Les types de données de CDuce sont des ensembles sur lesquels on peut effectuer des unions, des intersections ou des différences. Par exemple, le type $\texttt{Int}$ correspond à l'ensemble $\N$ et le type $\texttt{Int \\ 5}$ correspond à $\{ x \in \N\ |\ x \not = 5\}$.
-Le typage de CDuce est partiellement dynamique, c'est à dire que les types sont déterminés pendant l'exécution mais on peut restreindre les types possibles avec des annotations. Par exemple, une variable annotée avec le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types et peut changer pendant l'exécution. Comme JavaScript est aussi un langage à typage dynamique, il sera plus facile de le traduire en CDuce qu'en un langage à typage statique comme OCaml.
+
+Le typage de CDuce est statique mais on peut faire des tests de type dynamiques. Par exemple, une variable qui a le type $\texttt{Int}\ \texttt{|}\ \texttt{String}$, qui correspond à l'ensemble des entiers et des chaînes de caractères, a une valeur d'un de ces deux types, mais on ne sait pas forcément lequel avant l'exécution. Le typage de JavaScript est dynamique, ce qui fait que CDuce est une cible appropriée pour JavaScript.
 
 JavaScript est très permissif et la référence contient beaucoup de cas particuliers. Traduire l'ensemble de JavaScript en CDuce serait possible en suivant la référence, mais serait trop long et sans grand intérêt pour ce stage. On se limite donc à un fragment de JavaScript qui permet de faire des choses intéressantes, mais qui reste assez simple à traduire.
 
@@ -125,6 +126,8 @@ On représente les types $\texttt{null}$ et $\texttt{undefined}$ par les atomes 
 Le champ $\texttt{properties}$ est un enregistrement qui permet de stocker les propriétés de l'objet. Les propriétés peuvent avoir des noms calculés dynamiquement en JavaScript mais pas en CDuce : on ne peut accéder à un champ d'un enregistrement qu'avec le pattern matching et son nom, qui doit être connu à la compilation. On va donc se limiter aux noms de propriétés connus à la compilation.
 Le champ $\texttt{prototype}$ permet de gérer l'héritage des propriétés : si un objet a un prototype, il va avoir accès aux propriétés de son prototype.
 
+<div style="page-break-after: always; break-after: page;"></div>
+
 ​	$[\![{\texttt{function}}]\!]_{\texttt t} = \texttt{FunctionObject} = \texttt{\{}$
 ​	$\quad\texttt{properties = ref \{..\}}$
 ​	$\quad\texttt{prototype = ref (Object | }\unicode{96}\texttt{null)}$
@@ -200,7 +203,7 @@ L'appel d'une méthode est similaire à l'appel de fonction sur une propriété 
 
 ​	$[\![{\texttt{\{}\ {\color{teal}\texttt{x}_1}\texttt{:}{\color{teal}\texttt{e}_1}\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ {\color{teal}\texttt{x}_n}\texttt{:}{\color{teal}\texttt{e}_n}\ \texttt{\}}}]\!]_{\texttt e} = \texttt{\{}$
 ​	$\quad \texttt{properties = ref \{..\} } \texttt{\{}\ {\color{teal}\texttt{x}_1}\texttt{=}\ [\![{\color{teal}\texttt{e}_1}]\!]_{\texttt e}\ {\color{gray}\cdots}\ {\color{teal}\texttt{x}_n}\texttt{=}\ [\![{\color{teal}\texttt{e}_n}]\!]_{\texttt e}\ \texttt{\}}$
-​	$\quad \texttt{prototype = ref (Object | }\unicode{96}\texttt{null) {\color{rgb(145,80,110)}object\_prototype})} $
+​	$\quad \texttt{prototype = ref (Object | }\unicode{96}\texttt{null) {\color{rgb(145,80,110)}object\_prototype}} $
 ​	$\texttt{\}}$
 
 $\texttt{{\color{rgb(145,80,110)}object\_prototype}}$ ([20.1.3](https://262.ecma-international.org/13.0/#sec-properties-of-the-object-prototype-object)) est le prototype donné par défaut aux objets. Les objets de base héritent donc des propriétés de cet objet. Cet objet a notamment une propriété $\texttt{\_\_proto\_\_}$ ([20.1.3.8](https://262.ecma-international.org/13.0/#sec-object.prototype.__proto__)) qui a un comportement spécial qui permet de modifier le champ $\texttt{prototype}$ en même temps qu'on la modifie. C'est comme ça qu'on peut modifier le prototype d'un objet.
