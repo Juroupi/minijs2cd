@@ -9,6 +9,16 @@
     all_properties := StringSet.add name !all_properties
   
   let make_typed_expression value = { value_type = AnyType; value }
+
+  let make_object_expression properties =
+    let prototype, properties =
+      List.fold_right (fun (name, value) (prototype, properties) ->
+        match name with
+        | "__proto__" -> (Some value, properties)
+        | _ -> (prototype, (name, value) :: properties)
+      ) properties (None, [])
+    in ObjectExpression (prototype, properties)
+
 %}
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL PLUS
@@ -33,7 +43,7 @@
 %%
 
 prog:
-| body=block EOF { { properties = StringSet.elements !all_properties; body; } }
+| body=block EOF { { properties = StringSet.elements !all_properties; body; globals = [] } }
 ;
 
 block:
@@ -107,7 +117,7 @@ expression:
 | DELETE e=typed_expression { match e with { value = MemberAccessExpression (obj, name) } -> add_property name; DeleteExpression (obj, name) | _ -> DeleteExpression (e, "") }
 | f=typed_expression LPAR params=separated_list(COMMA, typed_expression) RPAR { match f with { value = MemberAccessExpression (obj, member) } -> add_property member; MethodCallExpression (obj, member, params) | _ -> CallExpression (f, params) }
 | FUNCTION LPAR params=separated_list(COMMA, IDENT) RPAR LBRACE body=block RBRACE { FunctionExpression (params, body) }
-| LBRACE properties=separated_list(COMMA, separated_pair(IDENT, COLON, typed_expression)) RBRACE { ObjectExpression properties }
+| LBRACE properties=separated_list(COMMA, separated_pair(IDENT, COLON, typed_expression)) RBRACE { make_object_expression properties }
 ;
 
 %inline binary_operator:

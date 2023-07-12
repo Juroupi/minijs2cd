@@ -4,6 +4,7 @@ module StringSet = Set.Make(String)
 type prog = {
   properties : string list;
   body : block;
+  mutable globals : (string * value_type) list;
 }
 
 and declaration = {
@@ -40,7 +41,7 @@ and expression =
   | MemberAccessExpression of typed_expression * string
   | MemberAssignmentExpression of typed_expression * string * typed_expression
   | DeleteExpression of typed_expression * string
-  | ObjectExpression of (string * typed_expression) list
+  | ObjectExpression of typed_expression option * (string * typed_expression) list
   | CallExpression of typed_expression * typed_expression list
   | MethodCallExpression of typed_expression * string * typed_expression list
   | FunctionExpression of string list * block

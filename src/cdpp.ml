@@ -9,13 +9,18 @@ let print out prog =
       print_property_accessor prop;
       Printf.fprintf out "\n"
     ) prog.properties;
+    List.iter (fun (name, value_type) ->
+      Printf.fprintf out "let %s = " name;
+      print_init_value value_type;
+      Printf.fprintf out "\n"
+    ) prog.globals;
     Printf.fprintf out "let _ = (\n";
     List.iter print_declaration prog.body.declarations;
     print_statements prog.body.statements;
     Printf.fprintf out ")"
 
   and print_object_init_value obj =
-    Printf.fprintf out "{ uid=0 properties=(ref {";
+    Printf.fprintf out "{ uid=(new_uid []) properties=(ref {";
     print_properties print_type ~optprops:obj.optprops obj.props;
     Printf.fprintf out " } {";
     print_properties print_init_value obj.props;
@@ -120,11 +125,14 @@ let print out prog =
       Printf.fprintf out "in loop []) else [])) [] in\n";
       print_statements statements
   
-  and print_sequence l =
+  and print_sequence ?(replace_objects = false) l =
     Printf.fprintf out "[ ";
     List.iter (fun e ->
       Printf.fprintf out "(";
-      print_expression e;
+      begin match replace_objects, e with
+      | true, { value_type = ObjectType _ } -> Printf.fprintf out "\"{}\""
+      | _ -> print_expression e
+      end;
       Printf.fprintf out ") "
     ) l;
     Printf.fprintf out "]"
@@ -216,10 +224,12 @@ let print out prog =
       print_expression obj;
       Printf.fprintf out "))"
     | MemberAccessExpression (obj, "__proto__"), _ ->
-      Printf.fprintf out "(!(!(";
+      Printf.fprintf out "(!(";
       print_expression obj;
-      Printf.fprintf out ")).prototype)"
+      Printf.fprintf out ").prototype)"
 
+    | MemberAccessExpression (obj, member), UndefinedType ->
+      Printf.fprintf out "`undefined"
     | MemberAccessExpression (obj, member), _ ->
       let rec print_member_access n =
         if n <= 0 then begin
@@ -284,7 +294,7 @@ let print out prog =
 
     | MethodCallExpression ({ value = IdentifierExpression "console" }, "log", params), _ ->
       Printf.fprintf out "(print_sequence ";
-      print_sequence params;
+      print_sequence ~replace_objects:true params;
       Printf.fprintf out ")"
 
     | MethodCallExpression (obj, member, params), _ ->
@@ -301,7 +311,7 @@ let print out prog =
       print_sequence params;
       Printf.fprintf out ")"
 
-    | ObjectExpression properties, ObjectType obj ->
+    | ObjectExpression (prototype, properties), ObjectType obj ->
       Printf.fprintf out "{ uid=(new_uid []) properties=(ref {";
       print_properties print_type ~optprops:obj.optprops obj.props;
       Printf.fprintf out " } {";
@@ -313,16 +323,24 @@ let print out prog =
       Printf.fprintf out " }) prototype=(ref (";
       print_type obj.proto;
       Printf.fprintf out ") (";
-      print_init_value obj.proto;
+      begin match prototype with
+      | Some proto -> print_expression proto
+      | None -> Printf.fprintf out "object_prototype"
+      end;
       Printf.fprintf out ")) }"
-    | ObjectExpression properties, _ ->
+    | ObjectExpression (prototype, properties), _ ->
       Printf.fprintf out "(create_object {";
       List.iter (fun (name, value) ->
         Printf.fprintf out " %s = (" name;
         print_expression value;
         Printf.fprintf out ")"
       ) properties;
-      Printf.fprintf out "} object_prototype)"
+      Printf.fprintf out "} ";
+      begin match prototype with
+      | Some proto -> print_expression proto
+      | None -> Printf.fprintf out "object_prototype"
+      end;
+      Printf.fprintf out ")"
 
     | FunctionExpression ([], body), _ ->
       Printf.fprintf out "(create_function {} (fun (this : Value) (_ : [Value*]) : Value = ";

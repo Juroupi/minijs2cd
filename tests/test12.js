@@ -1,4 +1,8 @@
-let x = { a : 6 };
-let y = {};
-y.__proto__ = x;
-let a = y.a;
+let p = { x : 1 };
+let q = { y : 2, __proto__ : p };
+
+console.log("q:", q.x, q.y);
+
+p.x = 3;
+
+console.log("q:", q.x, q.y);

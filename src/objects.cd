@@ -24,13 +24,21 @@ let new_uid =
 	let uid = ref (Int) 0 in
 	(fun (_ : []) : Int = uid := (!uid) + 1; !uid)
 
-let create_object (properties : {..}) (prototype : Object | `null) : Object = {
+let object_prototype = {
 	uid = (new_uid []);
-	properties = (ref {..} properties);
-	prototype = (ref (Object | `null) prototype);
+	properties = (ref {..} {});
+	prototype = (ref (Object | `null) `null);
 }
 
-let object_prototype = create_object {} `null
+let create_object (properties : {..}) (prototype : Value) : Object = {
+	uid = (new_uid []);
+	properties = (ref {..} properties);
+	prototype = (ref (Object | `null) (
+		match prototype with
+		| prototype & (Object | `null) -> prototype
+		| _ -> object_prototype
+	));
+}
 
 let function_prototype = create_object {} object_prototype
 

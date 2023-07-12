@@ -24,6 +24,10 @@ let type_prog prog =
   (* string -> value_type list ref *)
   let env = ref StringMap.empty in
 
+  let add_global name value_type =
+    prog.globals <- (name, value_type) :: prog.globals
+  in
+
   let add_decl ?(value_type = NoneType) name =
     match StringMap.find_opt name !env with
     | Some value_types -> value_types := value_type :: !value_types
@@ -113,6 +117,8 @@ let type_prog prog =
   let bigint_prototype = create_object object_prototype in
   let string_prototype = create_object object_prototype in
   let boolean_prototype = create_object object_prototype in
+
+  add_global "object_prototype" object_prototype;
 
   let create_function () =
     create_object function_prototype
@@ -208,12 +214,21 @@ let type_prog prog =
       let mem = mem_prop obj.value_type member <> None in
       remove_prop obj.value_type member;
       BooleanType (if mem then Some true else None)
-    | ObjectExpression props ->
-      let props = List.fold_right (fun (name, e) props ->
-        type_expression e;
-        StringMap.add name e.value_type props
-      ) props StringMap.empty in
-      ObjectType { proto = object_prototype; props; optprops = StringSet.empty }
+    | ObjectExpression (proto, props) ->
+      let proto =
+        match proto with
+        | None -> object_prototype
+        | Some proto ->
+          type_expression proto;
+          proto.value_type
+      in
+      let props =
+        List.fold_right (fun (name, e) props ->
+          type_expression e;
+          StringMap.add name e.value_type props
+        ) props StringMap.empty
+      in
+      ObjectType { proto; props; optprops = StringSet.empty }
     | CallExpression (f, params) ->
       failwith "not implemented"
     | MethodCallExpression ({ value = IdentifierExpression "console" }, "log", params) ->

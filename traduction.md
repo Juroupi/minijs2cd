@@ -14,6 +14,25 @@ JavaScript est très permissif et la référence contient beaucoup de cas partic
 Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés et qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
 Le but de cette traduction pourrait être de déterminer, avant l'exécution, si aucune des exécutions possibles d'un programme JavaScript ne va générer d'erreur. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
 
+## Exemple
+
+```js
+let p = { x : 1n };
+let q = { y : 2n, __proto__ : p };
+let f = function f(p) { return p.x + p.y; };
+console.log(f(q));
+```
+
+```ocaml
+let p = { props={ x=1 } proto=`null } in
+let q = { props={ y=2 } proto=p } in
+let f = { props={} proto=`null call=(
+	fun (p : { props={ y=Int } proto={ props={ x=Int } proto=`null } }) : Int =
+		p.proto.props.x + p.props.y
+)} in
+print ((string_of (f.call q)) @ "n\n")
+```
+
 ## Grammaires
 
 ### JavaScript
