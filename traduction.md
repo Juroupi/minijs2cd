@@ -18,12 +18,16 @@ Le but de cette traduction pourrait être de déterminer, avant l'exécution, si
 
 Cet exemple correspond à un programme JavaScript et ce à quoi pourrait ressembler sa traduction en CDuce.
 
+### Programme JavaScript
+
 ```js
 let p = { x : 1n };
 let q = { y : 2n, __proto__ : p };
 let f = function f(p) { return p.x + p.y; };
 console.log(f(q)); // affiche: 3n
 ```
+
+### Programme CDuce
 
 ```ocaml
 let p = { props={ x=1 } proto=`null } in
@@ -43,80 +47,81 @@ La syntaxe CDuce décrite est aussi restreinte à ce qui est nécessaire pour la
 
 ### JavaScript
 
-<span style="display:inline-block;width:26em;">$\texttt{e} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Expressions**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Identifiant</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de chaîne de caractère</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{i}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de grand nombre entier</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{n}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de nombre</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{true}\ |\ \texttt{false}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéraux booléens</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{undefined}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur indéfinie</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{null}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur nulle</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{:}\texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{x}_n\texttt{:}\texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'objet</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}{\color{gray}\cdots}\texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x = e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e.x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Accès à une propriété</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{delete e.x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'une propriété</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{this}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> This</span>
+<span style="display:inline-block;width:30em;">$\texttt{e} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Expressions**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Identifiant</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de chaîne de caractère</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{i}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de grand nombre entier</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{n}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de nombre</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{true}\ |\ \texttt{false}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéraux booléens</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{undefined}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur indéfinie</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{null}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Valeur nulle</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{:}\texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{x}_n\texttt{:}\texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'objet</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{function} \ \texttt{(}\ \texttt{x}_1\texttt{,}{\color{gray}\cdots}\texttt{,}\ \texttt{x}_n\ \texttt{)}\ \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_m\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}{\color{gray}\cdots} \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{x = e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e.x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Accès à une propriété</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{delete e.x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'une propriété</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{this}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> This</span>
 
-<span style="display:inline-block;width:26em;">$\texttt{s} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Instructions**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Expression</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{let x = e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déclaration de variable</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{if (e) s}_1\texttt{ else s}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Instruction conditionnelle</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{while (e) s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Boucle</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{return e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Retour de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Bloc d'instructions</span>
+<span style="display:inline-block;width:30em;">$\texttt{s} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Instructions**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Expression</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{let x = e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déclaration de variable</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{if (e) s}_1\texttt{ else s}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Instruction conditionnelle</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{while (e) s}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Boucle</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{return e;}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Retour de fonction</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{\{}\ \texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n\ \texttt{\};}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Bloc d'instructions</span>
 
-<span style="display:inline-block;width:26em;">$\texttt{t} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Types**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{boolean}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Booléen</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{bigint}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Grand nombre entier</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{number}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Nombre</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{string}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Chaîne de caractères</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{null}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Type nul</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{undefined}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Type pour les valeurs indéfinies</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{object}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Objet</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{function}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Fonction</span>
+<span style="display:inline-block;width:30em;">$\texttt{t} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Types**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{boolean}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Booléen</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{bigint}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Grand nombre entier</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{number}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Nombre</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{string}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Chaîne de caractères</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{null}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Type nul</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{undefined}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Type pour les valeurs indéfinies</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{object}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Objet</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{function}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Fonction</span>
 
 ### CDuce
 
-<span style="display:inline-block;width:26em;">$\texttt{e} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Expressions**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Identifiant</span><span style="display:inline-block;width:26em;">$\quad|\quad \texttt{l}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \unicode{96}\texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Atome</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{[}\ \texttt{x}_1\ {\color{gray}\cdots}\ \texttt{x}_n\ \texttt{]}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de séquence</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{=}\ \texttt{e}_1\ {\color{gray}\cdots}\ \texttt{x}_n\texttt{=}\ \texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'enregistrement</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{+ e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Concaténation d'enregistrements (priorité à $\texttt{e}_2$)</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{\\ x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'un champ</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{fun x}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{ e}_1\ {\color{gray}\cdots}\ \texttt{e}_n\ $</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction avec des paramètres</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \textbf{\texttt{ref}}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{:= }\texttt{e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{!}\texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déréférencement</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{match e}_p\texttt{ with p}_1\ \texttt{->}\ \texttt{e}_1\ \texttt{|}\ {\color{gray}\cdots}\  \texttt{|}\ \texttt{p}_n\ \texttt{->}\ \texttt{e}_n$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Pattern matching</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{let x = e}_1\texttt{ in e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Définition locale</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{raise e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Lever une exception</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{try e with p}_1\ \texttt{->}\ \texttt{e}_1\ \texttt{|}\ {\color{gray}\cdots}\  \texttt{|}\ \texttt{p}_n\ \texttt{->}\ \texttt{e}_n$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Capturer une exception</span>
+<span style="display:inline-block;width:30em;">$\texttt{e} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Expressions**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Identifiant</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{l}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \unicode{96}\texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Atome</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{[}\ \texttt{x}_1\ {\color{gray}\cdots}\ \texttt{x}_n\ \texttt{]}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de séquence</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{=}\ \texttt{e}_1\ {\color{gray}\cdots}\ \texttt{x}_n\texttt{=}\ \texttt{e}_n\ \texttt{\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral d'enregistrement</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e}_1\ \texttt{+ e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Concaténation d'enregistrements (priorité à $\texttt{e}_2$)</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e}_1\ \texttt{\\ x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'un champ</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{fun x}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e}_f\texttt{ e}_1\ {\color{gray}\cdots}\ \texttt{e}_n\ $</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction avec des paramètres</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \textbf{\texttt{ref}}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{e}_1\ \texttt{:= }\texttt{e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{!}\texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déréférencement</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{match e}_p\texttt{ with p}_1\ \texttt{->}\ \texttt{e}_1\ \texttt{|}\ {\color{gray}\cdots}\  \texttt{|}\ \texttt{p}_n\ \texttt{->}\ \texttt{e}_n$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Pattern matching</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{let x = e}_1\texttt{ in e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Définition locale</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{raise e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Lever une exception</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{try e with p}_1\ \texttt{->}\ \texttt{e}_1\ \texttt{|}\ {\color{gray}\cdots}\  \texttt{|}\ \texttt{p}_n\ \texttt{->}\ \texttt{e}_n$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Capturer une exception</span>
 
-<span style="display:inline-block;width:26em;">$\texttt{t} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Types**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{Int}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Ensemble de tous les entiers</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{Float}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Nombre flottant</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{Char}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Ensemble de tous les caractères unicode</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \unicode{96}\texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Atome</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{Bool}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Booléen (équivalent à $\unicode{96}\texttt{true}\ \texttt{|}\ \unicode{96}\texttt{false}$)</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{[t*]}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Séquence de taille quelconque</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{String}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Chaîne de caractères (équivalent à $\texttt{[Char*]}$)</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{ref t}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Référence</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{=}\ \texttt{t}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\texttt{=}\ \texttt{t}_n\ \texttt{..\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Enregistrement</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}_1\texttt{ -> t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}_1\texttt{ | t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Union</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}_1\texttt{ \unicode{38} t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Intersection</span>
+<span style="display:inline-block;width:30em;">$\texttt{t} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Types**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{Int}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Ensemble de tous les entiers</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{Float}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Nombre flottant</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{Char}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Ensemble de tous les caractères unicode</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \unicode{96}\texttt{x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Atome</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{Bool}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Booléen (équivalent à $\unicode{96}\texttt{true}\ \texttt{|}\ \unicode{96}\texttt{false}$)</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{[t*]}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Séquence de taille quelconque</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{String}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Chaîne de caractères (équivalent à $\texttt{[Char*]}$)</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{ref t}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Référence</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\texttt{=}\ \texttt{t}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\texttt{=}\ \texttt{t}_n\ \texttt{..\}}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Enregistrement</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{t}_1\texttt{ -> t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Fonction</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{t}_1\texttt{ | t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Union</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{t}_1\texttt{ \unicode{38} t}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Intersection</span>
 
-<span style="display:inline-block;width:26em;">$\texttt{p} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Patterns**</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{x}$</span>Association d'un nom à l'expression
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{t}$</span>Assure que l'expression est de type $\texttt{t}$
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\ \texttt{= }\texttt{p}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\ \texttt{= }\texttt{p}_n\ \texttt{..\}}$</span>Extraction des champs d'un enregistrement
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{[}\ \texttt{p}_1\ {\color{gray}\cdots} \ \ \texttt{p}_n\ \texttt{]}$</span>Extraction des éléments du séquence
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{p}_1\ \texttt{\unicode{38} p}_2$</span>Les deux à la fois
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{p}_1\ \texttt{| p}_2$</span>Un des deux
+<span style="display:inline-block;width:30em;">$\texttt{p} ::=$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> **Patterns**</span>
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{x}$</span>Association d'un nom à l'expression
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{t}$</span>Assure que l'expression est de type $\texttt{t}$
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{\{}\ \texttt{x}_1\ \texttt{= }\texttt{p}_1\ {\color{gray}\cdots}\ \ \texttt{x}_n\ \texttt{= }\texttt{p}_n\ \texttt{..\}}$</span>Extraction des champs d'un enregistrement
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{[}\ \texttt{p}_1\ {\color{gray}\cdots} \ \ \texttt{p}_n\ \texttt{]}$</span>Extraction des éléments du séquence
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{p}_1\ \texttt{\unicode{38} p}_2$</span>Les deux à la fois
+<span style="display:inline-block;width:30em;">$\quad|\quad \texttt{p}_1\ \texttt{| p}_2$</span>Un des deux
 
 Les types CDuce peuvent être récursifs, par exemple un type de liste d'entiers peut s'écrire : $\texttt{type t = }\unicode{96}\texttt{nil | (Int, t)}$.
 
