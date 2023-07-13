@@ -16,11 +16,13 @@ Le but de cette traduction pourrait être de déterminer, avant l'exécution, si
 
 ## Exemple
 
+!!! détailler pourquoi on a mis un exemple
+
 ```js
 let p = { x : 1n };
 let q = { y : 2n, __proto__ : p };
 let f = function f(p) { return p.x + p.y; };
-console.log(f(q));
+console.log(f(q)); // 3n
 ```
 
 ```ocaml
@@ -30,7 +32,7 @@ let f = { props={} proto=`null call=(
 	fun (p : { props={ y=Int } proto={ props={ x=Int } proto=`null } }) : Int =
 		p.proto.props.x + p.props.y
 )} in
-print ((string_of (f.call q)) @ "n\n")
+print ((string_of (f.call q)) @ "n\n") (* 3n *)
 ```
 
 ## Grammaires
@@ -116,6 +118,8 @@ Les types CDuce peuvent être récursifs, par exemple un type de liste d'entiers
 
 ## Traduction
 
+!!! expliquer
+
 Les fonctions en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donné ici.
 
 ### Types
@@ -144,8 +148,6 @@ On représente les types $\texttt{null}$ et $\texttt{undefined}$ par les atomes 
 
 Le champ $\texttt{properties}$ est un enregistrement qui permet de stocker les propriétés de l'objet. Les propriétés peuvent avoir des noms calculés dynamiquement en JavaScript mais pas en CDuce : on ne peut accéder à un champ d'un enregistrement qu'avec le pattern matching et son nom, qui doit être connu à la compilation. On va donc se limiter aux noms de propriétés connus à la compilation.
 Le champ $\texttt{prototype}$ permet de gérer l'héritage des propriétés : si un objet a un prototype, il va avoir accès aux propriétés de son prototype.
-
-<div style="page-break-after: always; break-after: page;"></div>
 
 ​	$[\![{\texttt{function}}]\!]_{\texttt t} = \texttt{FunctionObject} = \texttt{\{}$
 ​	$\quad\texttt{properties = ref \{..\}}$

@@ -19,6 +19,9 @@
       ) properties (None, [])
     in ObjectExpression (prototype, properties)
 
+  let empty_statement =
+    BlockStatement { declarations = []; statements = []; }
+
 %}
 
 %token EOF LPAR RPAR LBRACE RBRACE COLON SEMI COMMA DOT EQUAL PLUS
@@ -28,6 +31,9 @@
 %token <string> NUMBER
 %token <string> BIGINT
 %token <string> IDENT
+
+%nonassoc NOELSE
+%nonassoc ELSE
 
 %right EQUAL
 %left EQUALITY INEQUALITY SEQUALITY SINEQUALITY
@@ -64,6 +70,7 @@ statement:
 | RETURN e=typed_expression SEMI { None, ReturnStatement e }
 | LBRACE body=block RBRACE { None, BlockStatement body }
 | IF LPAR cond=typed_expression RPAR s1=statement ELSE s2=statement { None, IfStatement (cond, snd s1, snd s2) }
+| IF LPAR cond=typed_expression RPAR s1=statement %prec NOELSE { None, IfStatement (cond, snd s1, empty_statement) }
 | WHILE LPAR cond=typed_expression RPAR s=statement { None, WhileStatement (cond, snd s) }
 ;
 

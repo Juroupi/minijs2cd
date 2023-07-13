@@ -1,5 +1,22 @@
 open Minijs
 
+let rec subtype t1 t2 =
+  match t1, t2 with
+  | ObjectType o1, ObjectType o2 -> o1 == o2
+  | FunctionType o1, FunctionType o2 -> o1 == o2
+  | UnionType (t11, t12), t2 -> subtype t11 t2 && subtype t12 t2
+  | t1, UnionType (t21, t22) -> subtype t1 t21 || subtype t1 t22
+  | _ -> t1 = t2
+
+let rec make_union t1 t2 =
+  match t1, t2 with
+  | UnionType (t11, t12), t2 -> make_union t11 (make_union t12 t2)
+  | BooleanType _, BooleanType _ -> BooleanType None
+  | _ when subtype t2 t1 -> t1
+  | _ when subtype t1 t2 -> t2
+  | _ -> UnionType (t1, t2)
+
+
 let rec mem_prop ?(n = 0) t name =
   (* None si on ne sait pas,
      -1 si on sait qu'elle n'existe pas,
@@ -18,11 +35,21 @@ let rec mem_prop ?(n = 0) t name =
     end
   | _ -> None
 
-(* Mettre à jour le vrai type quand on a fini de traduire le bloc *)
 let type_prog prog =
 
   (* string -> value_type list ref *)
   let env = ref StringMap.empty in
+
+  let merge_env env1 env2 =
+    StringMap.merge (fun _ l1 l2 ->
+      match l1, l2 with
+      | None, None -> None
+      | None, Some _ -> l2
+      | Some _, None -> l1
+      | Some { contents = l1 }, Some { contents = l2 } ->
+        Some (ref (List.map2 (fun t1 t2 -> make_union t1 t2) l1 l2))
+    ) env1 env2
+  in
 
   let add_global name value_type =
     prog.globals <- (name, value_type) :: prog.globals
@@ -51,7 +78,7 @@ let type_prog prog =
       if value_type' = NoneType then
         value_types := value_type :: (List.tl !value_types)
       else
-        value_types := (UnionType (value_type', value_type)) :: (List.tl !value_types)
+        value_types := (make_union value_type' value_type) :: (List.tl !value_types)
     | _ ->
       ()
   in
@@ -80,12 +107,12 @@ let type_prog prog =
     | ObjectType { proto; optprops; props } ->
       begin match StringMap.find_opt name props with
       | Some value_type when StringSet.mem name optprops ->
-        UnionType (value_type, find_prop proto name)
+        make_union value_type (find_prop proto name)
       | Some value_type -> value_type
       | None -> find_prop proto name
       end
     | UnionType (t1, t2) ->
-      UnionType (find_prop t1 name, find_prop t2 name)
+      make_union (find_prop t1 name) (find_prop t2 name)
     | _ ->
       UndefinedType
   in
@@ -95,7 +122,7 @@ let type_prog prog =
     | ObjectType o ->
       o.props <- StringMap.update name (function
         | Some value_type' ->
-          Some (UnionType (value_type', value_type))
+          Some (make_union value_type' value_type)
         | None ->
           o.optprops <- StringSet.add name o.optprops;
           Some value_type
@@ -136,14 +163,14 @@ let type_prog prog =
     | BigIntType -> bigint_prototype
     | BooleanType _ -> boolean_prototype
     | AnyType -> AnyType
-    | UnionType (t1, t2) -> UnionType (find_proto t1, find_proto t2)
+    | UnionType (t1, t2) -> make_union (find_proto t1) (find_proto t2)
     | _ -> failwith "Typing.find_proto"
   in
 
   let update_proto t value_type =
     match t, value_type with
-    | ObjectType o, (ObjectType _ | NullType) -> o.proto <- UnionType (o.proto, value_type)
-    | FunctionType o, (ObjectType _ | NullType) -> o.proto <- UnionType (o.proto, value_type)
+    | ObjectType o, (ObjectType _ | NullType) -> o.proto <- make_union o.proto value_type
+    | FunctionType o, (ObjectType _ | NullType) -> o.proto <- make_union o.proto value_type
     | _ -> ()
   in
 
@@ -163,7 +190,14 @@ let type_prog prog =
     | BlockStatement body ->
       type_block body
     | IfStatement (e, s1, s2) ->
-      failwith "not implemented"
+      type_expression e;
+      let prev_env = !env in
+      type_statement s1;
+      let s1_env = !env in
+      env := prev_env;
+      type_statement s2;
+      let s2_env = !env in
+      env := merge_env s1_env s2_env
     | WhileStatement (e, s) ->
       failwith "not implemented"
   
@@ -241,7 +275,23 @@ let type_prog prog =
   
   and type_operator op t1 t2 =
     match op, t1, t2 with
+    | _, UnionType (t11, t12), _ ->
+      make_union (type_operator op t11 t2) (type_operator op t12 t2)
+    | _, _, UnionType (t21, t22) ->
+      make_union (type_operator op t1 t21) (type_operator op t1 t22)
+    | _, (NoneType | AnyType), _ -> t1
+    | _, _, (NoneType | AnyType) -> t2
+    | AdditionOperator, _, _ -> type_addition_operator t1 t2
     | _ -> failwith "not implemented"
+
+  and type_addition_operator t1 t2 =
+    match t1, t2 with
+    | (StringType | ObjectType _ | FunctionType _), _ -> StringType
+    | _, (StringType | ObjectType _ | FunctionType _) -> StringType
+    | BigIntType, BigIntType -> BigIntType
+    | BigIntType, _ -> NoneType
+    | _, BigIntType -> NoneType
+    | _ -> NumberType
   in
 
   type_block prog.body
