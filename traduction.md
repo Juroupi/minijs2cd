@@ -14,15 +14,15 @@ JavaScript est très permissif et la référence contient beaucoup de cas partic
 Comme le typage de JavaScript est dynamique, on peut écrire des programmes qui ne sont pas bien typés et qui vont lever une exception à l'exécution. Par exemple, l'expression `"a"()` va lever une exception car on ne peut pas appeler une chaîne de caractères.
 Le but de cette traduction pourrait être de déterminer, avant l'exécution, si aucune des exécutions possibles d'un programme JavaScript ne va générer d'erreur. On pourrait traduire un code JavaScript et ensuite utiliser des outils de CDuce pour vérifier si le code généré est correctement typé.
 
-## Exemple
+## Exemple de traduction
 
-!!! détailler pourquoi on a mis un exemple
+Cet exemple correspond à un programme JavaScript et ce à quoi pourrait ressembler sa traduction en CDuce.
 
 ```js
 let p = { x : 1n };
 let q = { y : 2n, __proto__ : p };
 let f = function f(p) { return p.x + p.y; };
-console.log(f(q)); // 3n
+console.log(f(q)); // affiche: 3n
 ```
 
 ```ocaml
@@ -32,10 +32,14 @@ let f = { props={} proto=`null call=(
 	fun (p : { props={ y=Int } proto={ props={ x=Int } proto=`null } }) : Int =
 		p.proto.props.x + p.props.y
 )} in
-print ((string_of (f.call q)) @ "n\n") (* 3n *)
+print ((string_of (f.call q)) @ "n\n") (* affiche: 3n *)
 ```
 
 ## Grammaires
+
+On ne considère qu'un sous ensemble de la syntaxe JavaScript, qui est décrit dans cette section. On se limite à des instructions et des expression simples avec des fonctions et des objets. On ne considère pas les classes, les tableaux, etc. Les opérateurs, comme l'addition ($\texttt{+}$) ou la comparaison ($\texttt{==}$) correspondent à des fonctions à un ou deux paramètres et ne sont pas détaillés ici, mais sont présentes dans l'implémentation.
+
+La syntaxe CDuce décrite est aussi restreinte à ce qui est nécessaire pour la traduction.
 
 ### JavaScript
 
@@ -83,7 +87,7 @@ print ((string_of (f.call q)) @ "n\n") (* 3n *)
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{+ e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Concaténation d'enregistrements (priorité à $\texttt{e}_2$)</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{\\ x}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Suppression d'un champ</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{fun x}\ \texttt{(}\ \texttt{x}_1\texttt{:}\texttt{t}_1\ \texttt{)}\ {\color{gray}\cdots}\ \texttt{(}\ \texttt{x}_n\texttt{:}\texttt{t}_n\ \texttt{)}\ \texttt{:}\ \texttt{t}_r\ \texttt{=}\ \ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Littéral de fonction</span>
-<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{(}\ \texttt{e}_1\texttt{,}\ {\color{gray}\cdots}\ \texttt{,}\ \texttt{e}_n\ \texttt{)}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction</span>
+<span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_f\texttt{ e}_1\ {\color{gray}\cdots}\ \texttt{e}_n\ $</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Appel de fonction avec des paramètres</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \textbf{\texttt{ref}}\ \texttt{t}\ \texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Construction de référence</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{e}_1\ \texttt{:= }\texttt{e}_2$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Affectation</span>
 <span style="display:inline-block;width:26em;">$\quad|\quad \texttt{!}\texttt{e}$</span><span style="display:inline-block;white-space: nowrap;width: 0em;"> Déréférencement</span>
@@ -118,9 +122,9 @@ Les types CDuce peuvent être récursifs, par exemple un type de liste d'entiers
 
 ## Traduction
 
-!!! expliquer
+On va définir ici la fonction de traduction de JavaScript vers CDuce en fonction du type d'élément à traduire : les types ($[\![{\color{gray}\cdots}]\!]_{\texttt t}$), les expressions ($[\![{\color{gray}\cdots}]\!]_{\texttt e}$), les instructions ($[\![{\color{gray}\cdots}]\!]_{\texttt s}$) et les opérateurs pour les propriétés ($[\![{\color{gray}\cdots}]\!]_{\texttt p}$). On fait une traduction directe de la syntaxe, sans vérifier que le code est correct, par exemple on ne vérifie pas qu'une variable est déclarée avant d'être utilisée.
 
-Les fonctions en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donné ici.
+Les noms en <span style="color:rgb(145,80,110)">violet</span> sont des fonctions CDuce qui implémentent des fonctions détaillées dans la [référence JavaScript](https://262.ecma-international.org/13.0/). Leur code peut être complexe et n'est pas donné ici, mais est présent dans l'implémentation fournie.
 
 ### Types
 
@@ -161,7 +165,7 @@ Une fonction JavaScript est aussi un objet mais a un champ supplémentaire $\tex
 ##### Précisions
 
 Les objets ont normalement un champ $\texttt{extensible}$ qui indique si on peut ajouter des propriétés à l'objet ou modifier son prototype.
-Il y a aussi deux types de propriétés différentes pour les objets : les valeurs et les accesseurs (paire getter/setter), qui ont elles-mêmes des [champs](https://262.ecma-international.org/13.0/#table-object-property-attributes) qui modifient leur comportement. Par exemple, une propriété peut être non modifiable.
+Il y a aussi deux types de propriétés différentes pour les objets : les valeurs et les accesseurs (paire getter/setter), qui ont elles-mêmes des [champs](https://262.ecma-international.org/13.0/#table-object-property-attributes) cachés qui modifient leur comportement. Par exemple, une propriété peut être non modifiable.
 D'autres types d'objets existent aussi, comme les tableaux, qui ont un comportement particulier dans leur accès aux propriétés.
 On utilise une version très simplifiée du fonctionnement des objets dans cette traduction, qui ne prend pas en compte ces détails.
 
@@ -248,30 +252,6 @@ Une fonction est un objet mais son prototype par défaut est $\texttt{{\color{rg
 En JavaScript, on peut passer autant de paramètres que l'on veut à une fonction, peu importe le nombre de paramètres attendus. Les paramètres non fournis sont alors initialisés à $\texttt{undefined}$ et les paramètres en trop sont ignorés. La fonction $\texttt{call}$ reçoit la séquence de paramètres passés lors de l'appel et utilise un pattern matching sur cette séquence pour appeler la vraie fonction avec les bonnes valeurs en paramètres. Le pattern matching est généré en fonction du nombre de paramètres réellement attendus.
 Les instructions $\texttt{return}$ sont traduites par une levée d'exception avec la valeur à retourner. La fonction $\texttt{call}$ capture cette exception et retourne la valeur.
 
-### Opérateurs sur une propriété
-
-​	$[\![{\color{teal}\texttt{x}}]\!]_{\texttt p} = \texttt{\{}$
-​	$\quad\texttt{get =}$
-​	$\quad\quad\texttt{fun (obj : Object) : (Value | }\unicode{96}\texttt{nil) =}$
-​	$\quad\quad\quad\texttt{match !(obj.properties) with}$
-​	$\quad\quad\quad\texttt{| \{ {\color{teal}\texttt{x}} = {\color{teal}\texttt{x}} \& Property ..\} -> {\color{teal}\texttt{x}}}$
-​	$\quad\quad\quad\texttt{| \_ -> }\unicode{96}\texttt{nil}$
-​	$\quad\texttt{set =}$
-​	$\quad\quad\texttt{fun (obj : Object) (property : Value) : [] =}$
-​	$\quad\quad\quad\texttt{obj.properties := !(obj.properties) + \{ {\color{teal}\texttt{x}} = property \}}$
-​	$\quad\texttt{delete =}$
-​	$\quad\quad\texttt{fun (obj : Object) : [] =}$
-​	$\quad\quad\quad\texttt{obj.properties := !(obj.properties) \\ {\color{teal}\texttt{x}}}$
-​	$\ \texttt{\}}$
-
-Il faudrait pouvoir passer en paramètre un pattern aux fonctions comme $\texttt{{\color{rgb(145,80,110)}get\_property}}$ ou $\texttt{{\color{rgb(145,80,110)}set\_property}}$ pour qu'elles puissent manipuler des propriétés. Pour cela, pour chaque nom de propriété utilisé, on va générer des primitives de manipulation du champ associé, qui vont pouvoir être passées en paramètre aux fonctions plus complexes :
-
-- $\texttt{get}$ : récupère la valeur de la propriété.
-- $\texttt{set}$ : modifie la valeur de la propriété et l'ajoute si elle n'existe pas.
-- $\texttt{delete}$ : supprime la propriété.
-
-On utilise ici $\texttt{[]}$ pour désigner le type vide, qui n'a pas de valeur, comme $\texttt{unit}$ en OCaml.
-
 ### Instructions
 
 ​	$[\![\ ]\!]_{\texttt s} = \unicode{96}\texttt{undefined}$
@@ -315,3 +295,27 @@ On lève une exception avec l'atome $\unicode{96}\texttt{return}$ pour simuler u
 ​	$[\![{\texttt{\{}\ {\color{teal}\texttt{s}_1}\ {\color{gray}\cdots}\ {\color{teal}\texttt{s}_n}\ \texttt{\};}\ {\color{gray}\cdots}}]\!]_\texttt{s} = \texttt{let \_ = (} [\![{\color{teal}\texttt{s}_1\ {\color{gray}\cdots}\ \texttt{s}_n}]\!]_\texttt{s} \texttt{) in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$
 
 Toutes les déclarations du bloc sont remontées au début de celui-ci et on utilise des parenthèses pour limiter leur portée.
+
+### Opérateurs sur une propriété
+
+​	$[\![{\color{teal}\texttt{x}}]\!]_{\texttt p} = \texttt{\{}$
+​	$\quad\texttt{get =}$
+​	$\quad\quad\texttt{fun (obj : Object) : (Value | }\unicode{96}\texttt{nil) =}$
+​	$\quad\quad\quad\texttt{match !(obj.properties) with}$
+​	$\quad\quad\quad\texttt{| \{ {\color{teal}\texttt{x}} = {\color{teal}\texttt{x}} \& Property ..\} -> {\color{teal}\texttt{x}}}$
+​	$\quad\quad\quad\texttt{| \_ -> }\unicode{96}\texttt{nil}$
+​	$\quad\texttt{set =}$
+​	$\quad\quad\texttt{fun (obj : Object) (property : Value) : [] =}$
+​	$\quad\quad\quad\texttt{obj.properties := !(obj.properties) + \{ {\color{teal}\texttt{x}} = property \}}$
+​	$\quad\texttt{delete =}$
+​	$\quad\quad\texttt{fun (obj : Object) : [] =}$
+​	$\quad\quad\quad\texttt{obj.properties := !(obj.properties) \\ {\color{teal}\texttt{x}}}$
+​	$\ \texttt{\}}$
+
+Il faudrait pouvoir passer en paramètre un pattern aux fonctions comme $\texttt{{\color{rgb(145,80,110)}get\_property}}$ ou $\texttt{{\color{rgb(145,80,110)}set\_property}}$ pour qu'elles puissent manipuler des propriétés. Pour cela, pour chaque nom de propriété utilisé, on va générer des primitives de manipulation du champ associé, qui vont pouvoir être passées en paramètre aux fonctions plus complexes :
+
+- $\texttt{get}$ : récupère la valeur de la propriété.
+- $\texttt{set}$ : modifie la valeur de la propriété et l'ajoute si elle n'existe pas.
+- $\texttt{delete}$ : supprime la propriété.
+
+On utilise ici $\texttt{[]}$ pour désigner le type vide, qui n'a pas de valeur, comme $\texttt{unit}$ en OCaml.
