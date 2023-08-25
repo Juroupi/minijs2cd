@@ -167,9 +167,7 @@ Le champ $\texttt{prototype}$ permet de gérer l'héritage des propriétés : si
 
 Une fonction JavaScript est aussi un objet mais a un champ supplémentaire $\texttt{call}$, qui est une fonction CDuce qui contient son code réel. Elle prend en paramètre une valeur qui va être associée à $\texttt{this}$ et une séquence de valeurs qui seront les arguments réels de la fonction.
 
-##### Précisions
-
-Les objets ont normalement un champ $\texttt{extensible}$ qui indique si on peut ajouter des propriétés à l'objet ou modifier son prototype.
+**Précisions**	Les objets ont normalement un champ $\texttt{extensible}$ qui indique si on peut ajouter des propriétés à l'objet ou modifier son prototype.
 Il y a aussi deux types de propriétés différentes pour les objets : les valeurs et les accesseurs (paire getter/setter), qui ont elles-mêmes des [champs](https://262.ecma-international.org/13.0/#table-object-property-attributes) cachés qui modifient leur comportement. Par exemple, une propriété peut être non modifiable.
 D'autres types d'objets existent aussi, comme les tableaux, qui ont un comportement particulier dans leur accès aux propriétés.
 On utilise une version très simplifiée du fonctionnement des objets dans cette traduction, qui ne prend pas en compte ces détails.
@@ -271,7 +269,7 @@ On utilise le "$\texttt{\_}$" pour ignorer la valeur de l'expression.
 <span style="display:inline-block;width:24em;">		$\texttt{let {\color{teal}x} = ref Value }\unicode{96}\texttt{undefined in}$</span>$\rightarrow\ $ Déclaration, déplacée au début du bloc
 <span style="display:inline-block;width:24em;">		$\texttt{let \_ = {\color{teal}x} := } [\![{\color{teal}\texttt{e}}]\!]_{\texttt e} \texttt{ in } [\![{\color{gray}\cdots}]\!]_{\texttt s}$</span>$\rightarrow\ $ Initialisation
 
-En JavaScript, les déclarations de variables avec $\texttt{let}$ sont remontées au début de leur bloc. Si on essaye de récupérer la valeur d'une variable avant son initialisation, une exception $\texttt{ReferenceError}$ est levée. Deux déclarations ne peuvent pas avoir le même nom dans une même bloc.
+En JavaScript, les déclarations de variables avec $\texttt{let}$ sont remontées au début de leur bloc. Si on essaye de récupérer la valeur d'une variable avant son initialisation, une exception $\texttt{ReferenceError}$ est levée. Deux déclarations ne peuvent pas avoir le même nom dans un même bloc.
 
 ​	$[\![{\texttt{if ({\color{teal}e}) {\color{teal}s}}{\color{teal}_1}\texttt{ else {\color{teal}s}}{\color{teal}_2}}\texttt{ }{\color{gray}\cdots}]\!]_{\texttt s} =$
 ​	$\quad\texttt{let \_ = }$
@@ -301,6 +299,8 @@ On lève une exception avec l'atome $\unicode{96}\texttt{return}$ pour simuler u
 
 Toutes les déclarations du bloc sont remontées au début de celui-ci et on utilise des parenthèses pour limiter leur portée.
 
+<div style="page-break-after: always; break-after: page;"></div>
+
 ### Opérateurs sur une propriété
 
 ​	$[\![{\color{teal}\texttt{x}}]\!]_{\texttt p} = \texttt{\{}$
@@ -324,3 +324,9 @@ Il faudrait pouvoir passer en paramètre un pattern aux fonctions comme $\texttt
 - $\texttt{delete}$ : supprime la propriété.
 
 On utilise ici $\texttt{[]}$ pour désigner le type vide, qui n'a pas de valeur, comme $\texttt{unit}$ en OCaml.
+
+## Implémentation
+
+On a une implémentation de la traduction présentée ici : [minijs2cd](https://github.com/Juroupi/minijs2cd/). Elle vient avec des exemples qui permettent de tester la traduction. Il y a une branche `typing` dans le git, dans laquelle on essaye de typer quelques expressions.
+
+On a aussi une autre implémentation ([js2cd](https://github.com/Juroupi/js2cd/)), qui supporte une plus grande syntaxe, avec par exemple les classes et l'opérateur $\texttt{new}$, qui vérifie les déclarations et qui implémente plus fidèlement les objets avec leurs champs cachés et les différents types de propriétés. On peut aussi créer des classes simples avec $\texttt{class}$. C'est la première implémentation que j'ai faite mais elle devenait trop compliquée et j'ai abandonné cette version pour celle présentée ici.

@@ -1,7 +1,7 @@
 let p = "a";
 
 if (false) {
-    p = true;
+    p = 1;
 }
 
 else {
